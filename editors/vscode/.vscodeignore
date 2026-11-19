@@ -1,0 +1,8 @@
+src/**
+test/**
+node_modules/**
+build.mjs
+tsconfig.json
+**/*.map
+out/page.mjs
+out/harness*.html

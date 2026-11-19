@@ -1,0 +1,69 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # rust-toolchain.toml selects the toolchain and its components.
+      - run: rustup show
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Rust import layout
+        run: python3 scripts/check_imports.py
+      - name: Rust format
+        run: cargo fmt --all -- --check
+      - name: Rust lint
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: Rust tests
+        run: cargo test --workspace --all-features
+
+      - name: Python package
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install maturin pytest mypy pyright black isort flake8 klayout
+          maturin develop
+      - name: Python format and lint
+        run: |
+          . .venv/bin/activate
+          black --check python designs benchmarks tests scripts
+          isort --check python designs benchmarks tests scripts
+          flake8 --max-line-length 120 --extend-ignore E402,W503,E203,W605 --exclude tests/typing/refuse.py python designs benchmarks tests scripts
+      - name: Python types
+        run: |
+          . .venv/bin/activate
+          mypy
+          mypy --strict benchmarks/balanced_lanes/conditions.py
+          mypy --strict benchmarks/metering_mixer/conditions.py
+          pyright
+      - name: Python tests
+        run: |
+          . .venv/bin/activate
+          pytest
+
+      # KLayout, the layout tool mask shops use, reads the files the tests write and must agree
+      # with this project's own checks.
+      - name: KLayout equivalence
+        run: |
+          . .venv/bin/activate
+          KLAYOUT_PYTHON=$PWD/.venv/bin/python pytest -m klayout
+
+      - name: VS Code extension
+        working-directory: editors/vscode
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run build

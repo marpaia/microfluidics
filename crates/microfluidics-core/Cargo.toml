@@ -1,0 +1,18 @@
+[package]
+name = "microfluidics-core"
+description = "The chip design language, content hashes and the data types the crates share"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+serde_json_canonicalizer = { workspace = true }

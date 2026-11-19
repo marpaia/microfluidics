@@ -1,0 +1,21 @@
+{
+  "changes": [
+    [
+      "reagent_resistor.run_length",
+      "1000um",
+      "1176.674um"
+    ],
+    [
+      "sample_resistor.run_length",
+      "5600um",
+      "5700.237um"
+    ]
+  ],
+  "converged": true,
+  "distances": {
+    "buffer_share": 0.02351108264415955,
+    "reagent_share": 0.19606426689171358,
+    "sample_share": 0.057754623815437695
+  },
+  "tuned_values": "\"reagent_resistor.run_length\" = \"1176.674um\"\n\"sample_resistor.run_length\" = \"5700.237um\"\n"
+}

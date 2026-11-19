@@ -1,0 +1,227 @@
+[
+  {
+    "arguments": "",
+    "fingerprint": {
+      "access": [
+        [
+          30000000,
+          30450000
+        ]
+      ],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [
+        [
+          "it",
+          "@30000000,30900000",
+          "it.access",
+          [
+            [
+              "flow",
+              900000,
+              450000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          30000000,
+          30900000,
+          100000,
+          "flow",
+          "PlusY",
+          "Both"
+        ]
+      ],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.pad",
+          "flow",
+          29550000,
+          30000000,
+          30450000,
+          30900000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "pad_size = 1.5mm, channel_width = 200um",
+    "fingerprint": {
+      "access": [
+        [
+          30000000,
+          30750000
+        ]
+      ],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [
+        [
+          "it",
+          "@30000000,31500000",
+          "it.access",
+          [
+            [
+              "flow",
+              1500000,
+              750000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          30000000,
+          31500000,
+          200000,
+          "flow",
+          "PlusY",
+          "Both"
+        ]
+      ],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.pad",
+          "flow",
+          29250000,
+          30000000,
+          30750000,
+          31500000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "pad_size = 400um, channel_width = 40um",
+    "fingerprint": {
+      "access": [
+        [
+          30000000,
+          30200000
+        ]
+      ],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [
+        [
+          "it",
+          "@30000000,30400000",
+          "it.access",
+          [
+            [
+              "flow",
+              400000,
+              200000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          30000000,
+          30400000,
+          40000,
+          "flow",
+          "PlusY",
+          "Both"
+        ]
+      ],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.pad",
+          "flow",
+          29800000,
+          30000000,
+          30200000,
+          30400000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  }
+]

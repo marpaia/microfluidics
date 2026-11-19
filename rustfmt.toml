@@ -1,0 +1,3 @@
+max_width = 120
+# Import grouping (std, third-party, microfluidics_*, crate) and crate-rooted paths are checked by
+# scripts/check_imports.py: rustfmt's group_imports is unstable and has no group for workspace crates.

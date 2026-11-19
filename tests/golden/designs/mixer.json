@@ -1,0 +1,1037 @@
+{
+  "tuned": null,
+  "tuned_values": "",
+  "untuned": {
+    "checks": [
+      {
+        "id": "deterministic",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {}
+      },
+      {
+        "id": "rules",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "chip.size": 25.0,
+          "feature.space": 199.99999999999878,
+          "feature.width": 199.99999999999878,
+          "layer.count": 1.0,
+          "layer.height": 49.99999999999999,
+          "port.edge": 2950.0,
+          "port.pitch": 4000.0,
+          "resist.aspect": 0.2500000000000015,
+          "roof.span": 4.000000000000011
+        }
+      },
+      {
+        "id": "connectivity",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "components": 1.0,
+          "edges": 21.0,
+          "nets": 15.0,
+          "open_to_flow": 1.0,
+          "ports": 16.0
+        }
+      },
+      {
+        "id": "mask-rules",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "chip.size": 25.0,
+          "feature.space": 199.99999999999878,
+          "feature.width": 199.99999999999878,
+          "layer.count": 1.0,
+          "layer.height": 49.99999999999999,
+          "port.edge": 2950.0,
+          "port.pitch": 4000.0,
+          "resist.aspect": 0.2500000000000015,
+          "roof.span": 4.000000000000011
+        }
+      },
+      {
+        "id": "gds-readback",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "bytes": 2678.0,
+          "flow.outlines": 43.0,
+          "structures": 6.0
+        }
+      },
+      {
+        "id": "print",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "flow.checked": 0.0,
+          "flow.failing": 0.0,
+          "flow.worst_error_um": 0.0
+        }
+      },
+      {
+        "id": "graph",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "conservation_residual": 3.6359428280794854e-14,
+          "edges": 21.0,
+          "edges_without_flow": 0.0,
+          "max_reynolds": 0.17027027623387114,
+          "vertices": 22.0
+        }
+      },
+      {
+        "id": "requirement/first_share",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "outlet": 49.99655830951927
+        }
+      },
+      {
+        "id": "requirement/second_share",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "outlet": 29.980861013907745
+        }
+      },
+      {
+        "id": "requirement/third_share",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "outlet": 20.02258067655914
+        }
+      },
+      {
+        "id": "corners",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "first_share": 0.011345646227411965,
+          "first_share.high": 49.998821841947716,
+          "first_share.low": 49.994327176886294,
+          "second_share": 0.066209213337128,
+          "second_share.high": 29.981574362219177,
+          "second_share.low": 29.98013723599886,
+          "third_share": 0.1204923043996442,
+          "third_share.high": 20.02409846087993,
+          "third_share.low": 20.021040922039923
+        }
+      }
+    ],
+    "fingerprint": {
+      "access": [
+        [
+          10200000,
+          2950000
+        ],
+        [
+          14200000,
+          2950000
+        ],
+        [
+          20050000,
+          15700000
+        ],
+        [
+          6200000,
+          2950000
+        ]
+      ],
+      "edges": [
+        [
+          "exit",
+          "@19000000,15700000",
+          "@19600000,15700000",
+          [
+            [
+              "flow",
+              200000,
+              600000
+            ]
+          ]
+        ],
+        [
+          "first_feed",
+          "@13000000,6000000",
+          "@13000000,11800000",
+          [
+            [
+              "flow",
+              200000,
+              5800000
+            ]
+          ]
+        ],
+        [
+          "first_in",
+          "@14200000,3400000",
+          "first_in.access",
+          [
+            [
+              "flow",
+              900000,
+              450000
+            ]
+          ]
+        ],
+        [
+          "first_lead",
+          "@14200000,3400000",
+          "@14200000,4000000",
+          [
+            [
+              "flow",
+              200000,
+              600000
+            ]
+          ]
+        ],
+        [
+          "first_resistor",
+          "@14200000,4000000",
+          "@13000000,6000000",
+          [
+            [
+              "flow",
+              200000,
+              7200000
+            ]
+          ]
+        ],
+        [
+          "meet",
+          "@13000000,11800000",
+          "meet.c[2]",
+          [
+            [
+              "flow",
+              200000,
+              200000
+            ]
+          ]
+        ],
+        [
+          "meet",
+          "@5000000,11800000",
+          "meet.c[0]",
+          [
+            [
+              "flow",
+              200000,
+              200000
+            ]
+          ]
+        ],
+        [
+          "meet",
+          "@9000000,11800000",
+          "meet.c[1]",
+          [
+            [
+              "flow",
+              200000,
+              200000
+            ]
+          ]
+        ],
+        [
+          "meet",
+          "meet.c[0]",
+          "meet.c[1]",
+          [
+            [
+              "flow",
+              200000,
+              4000000
+            ]
+          ]
+        ],
+        [
+          "meet",
+          "meet.c[1]",
+          "meet.c[2]",
+          [
+            [
+              "flow",
+              200000,
+              4000000
+            ]
+          ]
+        ],
+        [
+          "meet",
+          "meet.c[2]",
+          "@15000000,12100000",
+          [
+            [
+              "flow",
+              200000,
+              2000000
+            ]
+          ]
+        ],
+        [
+          "mixer",
+          "@15000000,12100000",
+          "@19000000,15700000",
+          [
+            [
+              "flow",
+              200000,
+              31600000
+            ]
+          ]
+        ],
+        [
+          "outlet",
+          "@19600000,15700000",
+          "outlet.access",
+          [
+            [
+              "flow",
+              900000,
+              450000
+            ]
+          ]
+        ],
+        [
+          "second_feed",
+          "@9000000,7300000",
+          "@9000000,11800000",
+          [
+            [
+              "flow",
+              200000,
+              4500000
+            ]
+          ]
+        ],
+        [
+          "second_in",
+          "@10200000,3400000",
+          "second_in.access",
+          [
+            [
+              "flow",
+              900000,
+              450000
+            ]
+          ]
+        ],
+        [
+          "second_lead",
+          "@10200000,3400000",
+          "@10200000,4000000",
+          [
+            [
+              "flow",
+              200000,
+              600000
+            ]
+          ]
+        ],
+        [
+          "second_resistor",
+          "@10200000,4000000",
+          "@9000000,7300000",
+          [
+            [
+              "flow",
+              200000,
+              11100000
+            ]
+          ]
+        ],
+        [
+          "third_feed",
+          "@5000000,9400000",
+          "@5000000,11800000",
+          [
+            [
+              "flow",
+              200000,
+              2400000
+            ]
+          ]
+        ],
+        [
+          "third_in",
+          "@6200000,3400000",
+          "third_in.access",
+          [
+            [
+              "flow",
+              900000,
+              450000
+            ]
+          ]
+        ],
+        [
+          "third_lead",
+          "@6200000,3400000",
+          "@6200000,4000000",
+          [
+            [
+              "flow",
+              200000,
+              600000
+            ]
+          ]
+        ],
+        [
+          "third_resistor",
+          "@6200000,4000000",
+          "@5000000,9400000",
+          [
+            [
+              "flow",
+              200000,
+              17400000
+            ]
+          ]
+        ]
+      ],
+      "glass_nm": [
+        75000000,
+        25000000,
+        1000000
+      ],
+      "joints": [
+        [
+          "@15000000,12100000",
+          "@15000000,12100000"
+        ]
+      ],
+      "layers": [
+        [
+          "flow",
+          50000,
+          1
+        ]
+      ],
+      "name": "mixer",
+      "operating": {
+        "drives": {
+          "first_in.access": {
+            "pressure": 500.0
+          },
+          "outlet.access": {
+            "pressure": 0.0
+          },
+          "second_in.access": {
+            "pressure": 500.0
+          },
+          "third_in.access": {
+            "pressure": 500.0
+          }
+        },
+        "feeds": {
+          "first_in.access": {
+            "first": 1.0
+          },
+          "second_in.access": {
+            "second": 1.0
+          },
+          "third_in.access": {
+            "third": 1.0
+          }
+        },
+        "viscosity": 0.001
+      },
+      "ports": [
+        [
+          10200000,
+          3400000,
+          200000,
+          "flow",
+          "PlusY",
+          "Both"
+        ],
+        [
+          10200000,
+          4000000,
+          200000,
+          "flow",
+          "MinusY",
+          "Both"
+        ],
+        [
+          13000000,
+          11800000,
+          200000,
+          "flow",
+          "MinusY",
+          "Both"
+        ],
+        [
+          13000000,
+          6000000,
+          200000,
+          "flow",
+          "PlusY",
+          "Both"
+        ],
+        [
+          14200000,
+          3400000,
+          200000,
+          "flow",
+          "PlusY",
+          "Both"
+        ],
+        [
+          14200000,
+          4000000,
+          200000,
+          "flow",
+          "MinusY",
+          "Both"
+        ],
+        [
+          15000000,
+          12100000,
+          200000,
+          "flow",
+          "MinusX",
+          "Both"
+        ],
+        [
+          15000000,
+          12100000,
+          200000,
+          "flow",
+          "PlusX",
+          "Both"
+        ],
+        [
+          19000000,
+          15700000,
+          200000,
+          "flow",
+          "PlusX",
+          "Both"
+        ],
+        [
+          19600000,
+          15700000,
+          200000,
+          "flow",
+          "MinusX",
+          "Both"
+        ],
+        [
+          5000000,
+          11800000,
+          200000,
+          "flow",
+          "MinusY",
+          "Both"
+        ],
+        [
+          5000000,
+          9400000,
+          200000,
+          "flow",
+          "PlusY",
+          "Both"
+        ],
+        [
+          6200000,
+          3400000,
+          200000,
+          "flow",
+          "PlusY",
+          "Both"
+        ],
+        [
+          6200000,
+          4000000,
+          200000,
+          "flow",
+          "MinusY",
+          "Both"
+        ],
+        [
+          9000000,
+          11800000,
+          200000,
+          "flow",
+          "MinusY",
+          "Both"
+        ],
+        [
+          9000000,
+          7300000,
+          200000,
+          "flow",
+          "PlusY",
+          "Both"
+        ]
+      ],
+      "process": "conservative-su8-pdms",
+      "quantities": {},
+      "rectangles": [
+        [
+          "exit",
+          "flow",
+          19000000,
+          15600000,
+          19600000,
+          15800000
+        ],
+        [
+          "first_feed",
+          "flow",
+          12900000,
+          6000000,
+          13100000,
+          11800000
+        ],
+        [
+          "first_in.pad",
+          "flow",
+          13750000,
+          2500000,
+          14650000,
+          3400000
+        ],
+        [
+          "first_lead",
+          "flow",
+          14100000,
+          3400000,
+          14300000,
+          4000000
+        ],
+        [
+          "first_resistor.link[0]",
+          "flow",
+          13700000,
+          5800000,
+          14100000,
+          6000000
+        ],
+        [
+          "first_resistor.link[1]",
+          "flow",
+          13100000,
+          4000000,
+          13500000,
+          4200000
+        ],
+        [
+          "first_resistor.run[0]",
+          "flow",
+          14100000,
+          4000000,
+          14300000,
+          6000000
+        ],
+        [
+          "first_resistor.run[1]",
+          "flow",
+          13500000,
+          4000000,
+          13700000,
+          6000000
+        ],
+        [
+          "first_resistor.run[2]",
+          "flow",
+          12900000,
+          4000000,
+          13100000,
+          6000000
+        ],
+        [
+          "meet.collector",
+          "flow",
+          4900000,
+          12000000,
+          15000000,
+          12200000
+        ],
+        [
+          "meet.stub[0]",
+          "flow",
+          4900000,
+          11800000,
+          5100000,
+          12000000
+        ],
+        [
+          "meet.stub[1]",
+          "flow",
+          8900000,
+          11800000,
+          9100000,
+          12000000
+        ],
+        [
+          "meet.stub[2]",
+          "flow",
+          12900000,
+          11800000,
+          13100000,
+          12000000
+        ],
+        [
+          "mixer.link[0]",
+          "flow",
+          18800000,
+          12200000,
+          19000000,
+          12600000
+        ],
+        [
+          "mixer.link[1]",
+          "flow",
+          15000000,
+          12800000,
+          15200000,
+          13200000
+        ],
+        [
+          "mixer.link[2]",
+          "flow",
+          18800000,
+          13400000,
+          19000000,
+          13800000
+        ],
+        [
+          "mixer.link[3]",
+          "flow",
+          15000000,
+          14000000,
+          15200000,
+          14400000
+        ],
+        [
+          "mixer.link[4]",
+          "flow",
+          18800000,
+          14600000,
+          19000000,
+          15000000
+        ],
+        [
+          "mixer.link[5]",
+          "flow",
+          15000000,
+          15200000,
+          15200000,
+          15600000
+        ],
+        [
+          "mixer.run[0]",
+          "flow",
+          15000000,
+          12000000,
+          19000000,
+          12200000
+        ],
+        [
+          "mixer.run[1]",
+          "flow",
+          15000000,
+          12600000,
+          19000000,
+          12800000
+        ],
+        [
+          "mixer.run[2]",
+          "flow",
+          15000000,
+          13200000,
+          19000000,
+          13400000
+        ],
+        [
+          "mixer.run[3]",
+          "flow",
+          15000000,
+          13800000,
+          19000000,
+          14000000
+        ],
+        [
+          "mixer.run[4]",
+          "flow",
+          15000000,
+          14400000,
+          19000000,
+          14600000
+        ],
+        [
+          "mixer.run[5]",
+          "flow",
+          15000000,
+          15000000,
+          19000000,
+          15200000
+        ],
+        [
+          "mixer.run[6]",
+          "flow",
+          15000000,
+          15600000,
+          19000000,
+          15800000
+        ],
+        [
+          "outlet.pad",
+          "flow",
+          19600000,
+          15250000,
+          20500000,
+          16150000
+        ],
+        [
+          "second_feed",
+          "flow",
+          8900000,
+          7300000,
+          9100000,
+          11800000
+        ],
+        [
+          "second_in.pad",
+          "flow",
+          9750000,
+          2500000,
+          10650000,
+          3400000
+        ],
+        [
+          "second_lead",
+          "flow",
+          10100000,
+          3400000,
+          10300000,
+          4000000
+        ],
+        [
+          "second_resistor.link[0]",
+          "flow",
+          9700000,
+          7100000,
+          10100000,
+          7300000
+        ],
+        [
+          "second_resistor.link[1]",
+          "flow",
+          9100000,
+          4000000,
+          9500000,
+          4200000
+        ],
+        [
+          "second_resistor.run[0]",
+          "flow",
+          10100000,
+          4000000,
+          10300000,
+          7300000
+        ],
+        [
+          "second_resistor.run[1]",
+          "flow",
+          9500000,
+          4000000,
+          9700000,
+          7300000
+        ],
+        [
+          "second_resistor.run[2]",
+          "flow",
+          8900000,
+          4000000,
+          9100000,
+          7300000
+        ],
+        [
+          "third_feed",
+          "flow",
+          4900000,
+          9400000,
+          5100000,
+          11800000
+        ],
+        [
+          "third_in.pad",
+          "flow",
+          5750000,
+          2500000,
+          6650000,
+          3400000
+        ],
+        [
+          "third_lead",
+          "flow",
+          6100000,
+          3400000,
+          6300000,
+          4000000
+        ],
+        [
+          "third_resistor.link[0]",
+          "flow",
+          5700000,
+          9200000,
+          6100000,
+          9400000
+        ],
+        [
+          "third_resistor.link[1]",
+          "flow",
+          5100000,
+          4000000,
+          5500000,
+          4200000
+        ],
+        [
+          "third_resistor.run[0]",
+          "flow",
+          6100000,
+          4000000,
+          6300000,
+          9400000
+        ],
+        [
+          "third_resistor.run[1]",
+          "flow",
+          5500000,
+          4000000,
+          5700000,
+          9400000
+        ],
+        [
+          "third_resistor.run[2]",
+          "flow",
+          4900000,
+          4000000,
+          5100000,
+          9400000
+        ]
+      ],
+      "requirements": [
+        {
+          "bound": {
+            "is": {
+              "relative": true,
+              "value": 0.5,
+              "within": 0.01
+            }
+          },
+          "measure": {
+            "fraction": {
+              "species": "first"
+            }
+          },
+          "name": "first_share",
+          "statement": "The first liquid is 50 % of the mixture",
+          "subjects": [
+            "outlet"
+          ]
+        },
+        {
+          "bound": {
+            "is": {
+              "relative": true,
+              "value": 0.3,
+              "within": 0.01
+            }
+          },
+          "measure": {
+            "fraction": {
+              "species": "second"
+            }
+          },
+          "name": "second_share",
+          "statement": "The second liquid is 30 % of the mixture",
+          "subjects": [
+            "outlet"
+          ]
+        },
+        {
+          "bound": {
+            "is": {
+              "relative": true,
+              "value": 0.2,
+              "within": 0.01
+            }
+          },
+          "measure": {
+            "fraction": {
+              "species": "third"
+            }
+          },
+          "name": "third_share",
+          "statement": "The third liquid is 20 % of the mixture",
+          "subjects": [
+            "outlet"
+          ]
+        }
+      ],
+      "size_nm": [
+        25000000,
+        20000000,
+        4000000
+      ],
+      "translates": [
+        [
+          "first_resistor.run",
+          3,
+          1
+        ],
+        [
+          "meet.stub",
+          3,
+          1
+        ],
+        [
+          "mixer.run",
+          7,
+          1
+        ],
+        [
+          "second_resistor.run",
+          3,
+          1
+        ],
+        [
+          "third_resistor.run",
+          3,
+          1
+        ]
+      ],
+      "tunables": [
+        [
+          "second_resistor.run_length",
+          0.0033,
+          0.0001,
+          0.02,
+          false
+        ],
+        [
+          "third_resistor.run_length",
+          0.0054,
+          0.0001,
+          0.02,
+          false
+        ]
+      ]
+    },
+    "passes": true
+  }
+}

@@ -1,0 +1,13 @@
+/target/
+/runs/
+/papers/
+.env
+.env.*
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+node_modules/
+.mypy_cache/
+.pytest_cache/
+*.so

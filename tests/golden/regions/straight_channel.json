@@ -1,0 +1,236 @@
+[
+  {
+    "arguments": "",
+    "fingerprint": {
+      "access": [],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,32000000",
+          [
+            [
+              "flow",
+              100000,
+              2000000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          30000000,
+          30000000,
+          100000,
+          "flow",
+          "MinusY",
+          "Inlet"
+        ],
+        [
+          30000000,
+          32000000,
+          100000,
+          "flow",
+          "PlusY",
+          "Outlet"
+        ]
+      ],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.channel",
+          "flow",
+          29950000,
+          30000000,
+          30050000,
+          32000000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "length = 8mm, width = 40um",
+    "fingerprint": {
+      "access": [],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,38000000",
+          [
+            [
+              "flow",
+              40000,
+              8000000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          30000000,
+          30000000,
+          40000,
+          "flow",
+          "MinusY",
+          "Inlet"
+        ],
+        [
+          30000000,
+          38000000,
+          40000,
+          "flow",
+          "PlusY",
+          "Outlet"
+        ]
+      ],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.channel",
+          "flow",
+          29980000,
+          30000000,
+          30020000,
+          38000000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "length = 0.5mm, width = 300um",
+    "fingerprint": {
+      "access": [],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,30500000",
+          [
+            [
+              "flow",
+              300000,
+              500000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          30000000,
+          30000000,
+          300000,
+          "flow",
+          "MinusY",
+          "Inlet"
+        ],
+        [
+          30000000,
+          30500000,
+          300000,
+          "flow",
+          "PlusY",
+          "Outlet"
+        ]
+      ],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.channel",
+          "flow",
+          29850000,
+          30000000,
+          30150000,
+          30500000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  }
+]

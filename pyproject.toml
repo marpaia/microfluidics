@@ -1,0 +1,43 @@
+[build-system]
+requires = ["maturin>=1.7,<2"]
+build-backend = "maturin"
+
+[project]
+name = "microfluidics"
+version = "0.1.0"
+description = "Design microfluidic chips as typed Python: regions, designs, and every check on them"
+requires-python = ">=3.11"
+readme = "README.md"
+
+[project.scripts]
+microfluidics = "microfluidics.cli:main"
+
+[tool.maturin]
+manifest-path = "crates/microfluidics-py/Cargo.toml"
+module-name = "microfluidics._engine"
+python-source = "python"
+features = ["pyo3/extension-module"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["klayout: needs KLayout's Python module, named by KLAYOUT_PYTHON"]
+
+[tool.mypy]
+strict = true
+# Each benchmark's `conditions.py` is checked on its own: they share a module name.
+files = ["python", "designs", "tests"]
+mypy_path = "python:tests"
+# One file is wrong on purpose: the typing tests hold the checker to refusing it.
+exclude = ["tests/typing/refuse\\.py$"]
+
+[tool.pyright]
+include = ["python", "designs", "benchmarks", "tests"]
+exclude = ["tests/typing/refuse.py", ".venv"]
+extraPaths = ["python", "tests"]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120

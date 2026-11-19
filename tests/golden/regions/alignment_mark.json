@@ -1,0 +1,290 @@
+[
+  {
+    "arguments": "",
+    "fingerprint": {
+      "access": [],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [],
+      "ports": [],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.cross_left",
+          "trench",
+          29850000,
+          29995000,
+          29995000,
+          30005000
+        ],
+        [
+          "it.cross_right",
+          "trench",
+          30005000,
+          29995000,
+          30150000,
+          30005000
+        ],
+        [
+          "it.cross_upright",
+          "trench",
+          29995000,
+          29850000,
+          30005000,
+          30150000
+        ],
+        [
+          "it.square_ne",
+          "flow",
+          30015000,
+          30015000,
+          30150000,
+          30150000
+        ],
+        [
+          "it.square_nw",
+          "flow",
+          29850000,
+          30015000,
+          29985000,
+          30150000
+        ],
+        [
+          "it.square_se",
+          "flow",
+          30015000,
+          29850000,
+          30150000,
+          29985000
+        ],
+        [
+          "it.square_sw",
+          "flow",
+          29850000,
+          29850000,
+          29985000,
+          29985000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "arm_length = 500um, arm_width = 20um, gap = 5um",
+    "fingerprint": {
+      "access": [],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [],
+      "ports": [],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.cross_left",
+          "trench",
+          29750000,
+          29990000,
+          29990000,
+          30010000
+        ],
+        [
+          "it.cross_right",
+          "trench",
+          30010000,
+          29990000,
+          30250000,
+          30010000
+        ],
+        [
+          "it.cross_upright",
+          "trench",
+          29990000,
+          29750000,
+          30010000,
+          30250000
+        ],
+        [
+          "it.square_ne",
+          "flow",
+          30015000,
+          30015000,
+          30250000,
+          30250000
+        ],
+        [
+          "it.square_nw",
+          "flow",
+          29750000,
+          30015000,
+          29985000,
+          30250000
+        ],
+        [
+          "it.square_se",
+          "flow",
+          30015000,
+          29750000,
+          30250000,
+          29985000
+        ],
+        [
+          "it.square_sw",
+          "flow",
+          29750000,
+          29750000,
+          29985000,
+          29985000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "arm_length = 120um, arm_width = 8um, gap = 20um",
+    "fingerprint": {
+      "access": [],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [],
+      "ports": [],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.cross_left",
+          "trench",
+          29940000,
+          29996000,
+          29996000,
+          30004000
+        ],
+        [
+          "it.cross_right",
+          "trench",
+          30004000,
+          29996000,
+          30060000,
+          30004000
+        ],
+        [
+          "it.cross_upright",
+          "trench",
+          29996000,
+          29940000,
+          30004000,
+          30060000
+        ],
+        [
+          "it.square_ne",
+          "flow",
+          30024000,
+          30024000,
+          30060000,
+          30060000
+        ],
+        [
+          "it.square_nw",
+          "flow",
+          29940000,
+          30024000,
+          29976000,
+          30060000
+        ],
+        [
+          "it.square_se",
+          "flow",
+          30024000,
+          29940000,
+          30060000,
+          29976000
+        ],
+        [
+          "it.square_sw",
+          "flow",
+          29940000,
+          29940000,
+          29976000,
+          29976000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  }
+]

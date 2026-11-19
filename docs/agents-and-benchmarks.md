@@ -1,0 +1,54 @@
+# Agents and benchmarks
+
+This page covers driving the tool from an AI agent through the Model Context Protocol, and benchmarks: tasks stated once, against which any design can be scored.
+
+## MCP server
+
+`microfluidics mcp` speaks the Model Context Protocol over standard input and output.
+
+```console
+claude mcp add microfluidics -- microfluidics mcp
+```
+
+Its tools are the [commands](reference/commands.md) and three file tools, `read_file`, `write_file` and `list_files`, which work only within the directory the server was started in. There are no tools for editing a design piece by piece. An agent writes Python, as a person does, and runs `check`.
+
+- **Every result carries its checks.** The server's instructions tell an agent to call a requirement met only when its check says so, and to ask about anything a brief leaves open.
+- **An agent cannot waive a finding.** `write_file` refuses `*.waivers.toml`, which only a person writes, and `*.tuned.toml`, which only `close` writes.
+- **A design is code.** Each command runs in its own process with a time limit, so a design that hangs or crashes does not take the server down. This contains faults. It does not sandbox what a design's code can do.
+
+## Benchmarks
+
+A benchmark is a directory under [`benchmarks/`](../benchmarks/):
+
+| File | Contents |
+| --- | --- |
+| `brief.md` | The task in plain words |
+| `benchmark.toml` | The process, and the regions a candidate may place |
+| `conditions.py` | How every candidate is run and judged |
+
+`conditions.py` states what a candidate must provide as a typed `Protocol`, and the operating conditions and requirements applied to it:
+
+```python
+class Candidate(Protocol):
+    inlet: AccessPad
+    outlet: AccessPad
+    lane: Sequence[TrenchLane]
+
+
+def conditions(chip: Candidate, run: mf.Conditions) -> None:
+    run.operate(viscosity=0.7 * mPa_s, drive={chip.inlet: 10 * mbar, chip.outlet: 0 * mbar})
+    run.balanced = mf.Requirement("Every lane gets the same flow", mf.flow(chip.lane), mf.equal_within(5 * pct))
+```
+
+Scoring sets a candidate's own operating conditions and requirements aside and applies the benchmark's, so no design is judged by requirements it chose. Waivers do not count.
+
+`microfluidics bench <benchmark>` prints the brief, and `microfluidics bench <benchmark> <design>` scores a design.
+
+| Benchmark | Task | Reference design |
+| --- | --- | --- |
+| [`metering_mixer`](../benchmarks/metering_mixer/brief.md) | Three liquids metered to 89.2 %, 10.72 % and 0.08 % from one pressure | `goenner_mixer`: 3 of 3 requirements hold; passes |
+| [`balanced_lanes`](../benchmarks/balanced_lanes/brief.md) | One inlet feeding eight lanes equally, at low shear | `mother_machine_manifold`: 3 of 3 requirements hold; passes |
+
+## Evidence so far
+
+An agent given only the command and the `balanced_lanes` brief produced a design the benchmark passes, in 27 runs of the tool, with no fault in its Python. This is weak evidence. The guide's worked example has the benchmark's topology, so the agent adapted an example rather than designing from nothing, and it never saw the chip. The MCP server itself has been driven only by tests that speak its protocol.

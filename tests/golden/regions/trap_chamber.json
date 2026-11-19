@@ -1,0 +1,260 @@
+[
+  {
+    "arguments": "",
+    "fingerprint": {
+      "access": [],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,30400000",
+          [
+            [
+              "flow",
+              100000,
+              400000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          30000000,
+          30000000,
+          100000,
+          "flow",
+          "MinusY",
+          "Inlet"
+        ],
+        [
+          30000000,
+          30400000,
+          100000,
+          "flow",
+          "PlusY",
+          "Outlet"
+        ]
+      ],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.channel",
+          "flow",
+          29950000,
+          30000000,
+          30050000,
+          30400000
+        ],
+        [
+          "it.trap",
+          "trench",
+          30050000,
+          30100000,
+          30150000,
+          30300000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "channel_length = 2mm, channel_width = 60um, trap_width = 800um, trap_length = 300um",
+    "fingerprint": {
+      "access": [],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,32000000",
+          [
+            [
+              "flow",
+              60000,
+              2000000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          30000000,
+          30000000,
+          60000,
+          "flow",
+          "MinusY",
+          "Inlet"
+        ],
+        [
+          30000000,
+          32000000,
+          60000,
+          "flow",
+          "PlusY",
+          "Outlet"
+        ]
+      ],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.channel",
+          "flow",
+          29970000,
+          30000000,
+          30030000,
+          32000000
+        ],
+        [
+          "it.trap",
+          "trench",
+          30030000,
+          30600000,
+          30330000,
+          31400000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "trap_width = 50um, trap_length = 30um",
+    "fingerprint": {
+      "access": [],
+      "translates": [],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,30400000",
+          [
+            [
+              "flow",
+              100000,
+              400000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          30000000,
+          30000000,
+          100000,
+          "flow",
+          "MinusY",
+          "Inlet"
+        ],
+        [
+          30000000,
+          30400000,
+          100000,
+          "flow",
+          "PlusY",
+          "Outlet"
+        ]
+      ],
+      "process": null,
+      "quantities": {},
+      "rectangles": [
+        [
+          "it.channel",
+          "flow",
+          29950000,
+          30000000,
+          30050000,
+          30400000
+        ],
+        [
+          "it.trap",
+          "trench",
+          30050000,
+          30175000,
+          30080000,
+          30225000
+        ]
+      ],
+      "requirements": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "size_nm": [
+        60000000,
+        60000000,
+        3000000
+      ],
+      "tunables": []
+    }
+  }
+]

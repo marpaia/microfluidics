@@ -1,0 +1,905 @@
+{
+  "tuned": null,
+  "tuned_values": "",
+  "untuned": {
+    "checks": [
+      {
+        "id": "deterministic",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {}
+      },
+      {
+        "findings": 0,
+        "id": "rules",
+        "metrics": {
+          "chip.size": 16.0,
+          "feature.space": 2.9999999999999645,
+          "feature.width": 1.0000000000000242,
+          "layer.count": 2.0,
+          "layer.height": 1.1,
+          "port.edge": 2950.0,
+          "port.pitch": 8900.0,
+          "resist.aspect": 1.0999999999999732,
+          "roof.span": 7.499999999999988
+        },
+        "status": "satisfied"
+      },
+      {
+        "findings": 0,
+        "id": "connectivity",
+        "metrics": {
+          "components": 1.0,
+          "nets": 2.0,
+          "open_to_flow": 1.0,
+          "edges": 3.0,
+          "ports": 4.0
+        },
+        "status": "satisfied"
+      },
+      {
+        "findings": 0,
+        "id": "mask-rules",
+        "metrics": {
+          "chip.size": 16.0,
+          "feature.space": 2.9999999999999645,
+          "feature.width": 1.0000000000000242,
+          "layer.count": 2.0,
+          "layer.height": 1.1,
+          "port.edge": 2950.0,
+          "port.pitch": 8900.0,
+          "resist.aspect": 1.0999999999999732,
+          "roof.span": 7.499999999999988
+        },
+        "status": "satisfied"
+      },
+      {
+        "findings": 0,
+        "id": "gds-readback",
+        "metrics": {
+          "bytes": 2794.0,
+          "flow.outlines": 40.0,
+          "structures": 3.0,
+          "trench.outlines": 37.0
+        },
+        "status": "satisfied"
+      },
+      {
+        "findings": 0,
+        "id": "print",
+        "metrics": {
+          "flow.checked": 0.0,
+          "flow.failing": 0.0,
+          "flow.worst_error_um": 0.0,
+          "trench.checked": 15.0,
+          "trench.failing": 0.0,
+          "trench.narrowest_drawn_um": 1.0000000000000242,
+          "trench.narrowest_end_pullback_um": 0.13693806251435792,
+          "trench.narrowest_printed_um": 0.986962584283678,
+          "trench.worst_error_um": -0.01303741571634636
+        },
+        "status": "satisfied"
+      },
+      {
+        "findings": 0,
+        "id": "graph",
+        "metrics": {
+          "conservation_residual": 5.046528819837271e-15,
+          "max_reynolds": 0.12005186076184401,
+          "vertices": 4.0,
+          "edges": 3.0,
+          "edges_without_flow": 0.0
+        },
+        "status": "satisfied"
+      },
+      {
+        "findings": 0,
+        "id": "requirement/slow",
+        "metrics": {
+          "duct": 0.12005186076184401
+        },
+        "status": "satisfied"
+      },
+      {
+        "findings": 0,
+        "id": "corners",
+        "metrics": {
+          "slow": 0.175205412617459,
+          "slow.high": 0.175205412617459,
+          "slow.low": 0.07693840230665759
+        },
+        "status": "satisfied"
+      }
+    ],
+    "fingerprint": {
+      "access": [
+        [
+          4000000,
+          11850000
+        ],
+        [
+          4000000,
+          2950000
+        ]
+      ],
+      "translates": [
+        [
+          "monitor.along.lower",
+          11,
+          1
+        ],
+        [
+          "monitor.along.upper",
+          11,
+          1
+        ],
+        [
+          "monitor.up.lower",
+          11,
+          1
+        ],
+        [
+          "monitor.up.upper",
+          11,
+          1
+        ]
+      ],
+      "joints": [
+        [
+          "@4000000,11400000",
+          "@4000000,11400000"
+        ],
+        [
+          "@4000000,3400000",
+          "@4000000,3400000"
+        ]
+      ],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "test_channel",
+      "operating": {
+        "drives": {
+          "inlet.access": {
+            "pressure": 1000.0
+          },
+          "outlet.access": {
+            "pressure": 0.0
+          }
+        },
+        "feeds": {},
+        "viscosity": 0.001
+      },
+      "edges": [
+        [
+          "duct",
+          "@4000000,3400000",
+          "@4000000,11400000",
+          [
+            [
+              "flow",
+              100000,
+              8000000
+            ]
+          ]
+        ],
+        [
+          "inlet",
+          "@4000000,3400000",
+          "inlet.access",
+          [
+            [
+              "flow",
+              900000,
+              450000
+            ]
+          ]
+        ],
+        [
+          "outlet",
+          "@4000000,11400000",
+          "outlet.access",
+          [
+            [
+              "flow",
+              900000,
+              450000
+            ]
+          ]
+        ]
+      ],
+      "ports": [
+        [
+          4000000,
+          11400000,
+          100000,
+          "flow",
+          "MinusY",
+          "Both"
+        ],
+        [
+          4000000,
+          11400000,
+          100000,
+          "flow",
+          "PlusY",
+          "Outlet"
+        ],
+        [
+          4000000,
+          3400000,
+          100000,
+          "flow",
+          "MinusY",
+          "Inlet"
+        ],
+        [
+          4000000,
+          3400000,
+          100000,
+          "flow",
+          "PlusY",
+          "Both"
+        ]
+      ],
+      "process": "conservative-su8-pdms",
+      "quantities": {
+        "monitor.along.reach": 2.4999999999999998e-06,
+        "monitor.coarse.widest": 3.9999999999999996e-05,
+        "monitor.up.reach": 2.4999999999999998e-06
+      },
+      "rectangles": [
+        [
+          "duct.channel",
+          "flow",
+          3950000,
+          3400000,
+          4050000,
+          11400000
+        ],
+        [
+          "inlet.pad",
+          "flow",
+          3550000,
+          2500000,
+          4450000,
+          3400000
+        ],
+        [
+          "monitor.along.lower[0]",
+          "trench",
+          610500,
+          7700000,
+          614500,
+          7760000
+        ],
+        [
+          "monitor.along.lower[10]",
+          "trench",
+          1205500,
+          7700000,
+          1209500,
+          7760000
+        ],
+        [
+          "monitor.along.lower[1]",
+          "trench",
+          670000,
+          7700000,
+          674000,
+          7760000
+        ],
+        [
+          "monitor.along.lower[2]",
+          "trench",
+          729500,
+          7700000,
+          733500,
+          7760000
+        ],
+        [
+          "monitor.along.lower[3]",
+          "trench",
+          789000,
+          7700000,
+          793000,
+          7760000
+        ],
+        [
+          "monitor.along.lower[4]",
+          "trench",
+          848500,
+          7700000,
+          852500,
+          7760000
+        ],
+        [
+          "monitor.along.lower[5]",
+          "trench",
+          908000,
+          7700000,
+          912000,
+          7760000
+        ],
+        [
+          "monitor.along.lower[6]",
+          "trench",
+          967500,
+          7700000,
+          971500,
+          7760000
+        ],
+        [
+          "monitor.along.lower[7]",
+          "trench",
+          1027000,
+          7700000,
+          1031000,
+          7760000
+        ],
+        [
+          "monitor.along.lower[8]",
+          "trench",
+          1086500,
+          7700000,
+          1090500,
+          7760000
+        ],
+        [
+          "monitor.along.lower[9]",
+          "trench",
+          1146000,
+          7700000,
+          1150000,
+          7760000
+        ],
+        [
+          "monitor.along.upper[0]",
+          "flow",
+          600000,
+          7770000,
+          620000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[10]",
+          "flow",
+          1200000,
+          7770000,
+          1220000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[1]",
+          "flow",
+          660000,
+          7770000,
+          680000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[2]",
+          "flow",
+          720000,
+          7770000,
+          740000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[3]",
+          "flow",
+          780000,
+          7770000,
+          800000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[4]",
+          "flow",
+          840000,
+          7770000,
+          860000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[5]",
+          "flow",
+          900000,
+          7770000,
+          920000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[6]",
+          "flow",
+          960000,
+          7770000,
+          980000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[7]",
+          "flow",
+          1020000,
+          7770000,
+          1040000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[8]",
+          "flow",
+          1080000,
+          7770000,
+          1100000,
+          7830000
+        ],
+        [
+          "monitor.along.upper[9]",
+          "flow",
+          1140000,
+          7770000,
+          1160000,
+          7830000
+        ],
+        [
+          "monitor.coarse.line[0]",
+          "flow",
+          600000,
+          7300000,
+          620000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[10]",
+          "flow",
+          1395000,
+          7300000,
+          1430000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[11]",
+          "flow",
+          1470000,
+          7300000,
+          1505000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[12]",
+          "flow",
+          1560000,
+          7300000,
+          1600000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[13]",
+          "flow",
+          1640000,
+          7300000,
+          1680000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[14]",
+          "flow",
+          1720000,
+          7300000,
+          1760000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[1]",
+          "flow",
+          660000,
+          7300000,
+          680000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[2]",
+          "flow",
+          720000,
+          7300000,
+          740000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[3]",
+          "flow",
+          840000,
+          7300000,
+          865000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[4]",
+          "flow",
+          905000,
+          7300000,
+          930000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[5]",
+          "flow",
+          970000,
+          7300000,
+          995000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[6]",
+          "flow",
+          1080000,
+          7300000,
+          1110000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[7]",
+          "flow",
+          1150000,
+          7300000,
+          1180000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[8]",
+          "flow",
+          1220000,
+          7300000,
+          1250000,
+          7600000
+        ],
+        [
+          "monitor.coarse.line[9]",
+          "flow",
+          1320000,
+          7300000,
+          1355000,
+          7600000
+        ],
+        [
+          "monitor.fine[0]",
+          "trench",
+          600000,
+          7000000,
+          601000,
+          7200000
+        ],
+        [
+          "monitor.fine[10]",
+          "trench",
+          677800,
+          7000000,
+          679400,
+          7200000
+        ],
+        [
+          "monitor.fine[11]",
+          "trench",
+          682400,
+          7000000,
+          684000,
+          7200000
+        ],
+        [
+          "monitor.fine[12]",
+          "trench",
+          697600,
+          7000000,
+          699400,
+          7200000
+        ],
+        [
+          "monitor.fine[13]",
+          "trench",
+          702400,
+          7000000,
+          704200,
+          7200000
+        ],
+        [
+          "monitor.fine[14]",
+          "trench",
+          707200,
+          7000000,
+          709000,
+          7200000
+        ],
+        [
+          "monitor.fine[1]",
+          "trench",
+          604000,
+          7000000,
+          605000,
+          7200000
+        ],
+        [
+          "monitor.fine[2]",
+          "trench",
+          608000,
+          7000000,
+          609000,
+          7200000
+        ],
+        [
+          "monitor.fine[3]",
+          "trench",
+          624400,
+          7000000,
+          625600,
+          7200000
+        ],
+        [
+          "monitor.fine[4]",
+          "trench",
+          628600,
+          7000000,
+          629800,
+          7200000
+        ],
+        [
+          "monitor.fine[5]",
+          "trench",
+          632800,
+          7000000,
+          634000,
+          7200000
+        ],
+        [
+          "monitor.fine[6]",
+          "trench",
+          648800,
+          7000000,
+          650200,
+          7200000
+        ],
+        [
+          "monitor.fine[7]",
+          "trench",
+          653200,
+          7000000,
+          654600,
+          7200000
+        ],
+        [
+          "monitor.fine[8]",
+          "trench",
+          657600,
+          7000000,
+          659000,
+          7200000
+        ],
+        [
+          "monitor.fine[9]",
+          "trench",
+          673200,
+          7000000,
+          674800,
+          7200000
+        ],
+        [
+          "monitor.up.lower[0]",
+          "trench",
+          1440000,
+          7710500,
+          1500000,
+          7714500
+        ],
+        [
+          "monitor.up.lower[10]",
+          "trench",
+          1440000,
+          8305500,
+          1500000,
+          8309500
+        ],
+        [
+          "monitor.up.lower[1]",
+          "trench",
+          1440000,
+          7770000,
+          1500000,
+          7774000
+        ],
+        [
+          "monitor.up.lower[2]",
+          "trench",
+          1440000,
+          7829500,
+          1500000,
+          7833500
+        ],
+        [
+          "monitor.up.lower[3]",
+          "trench",
+          1440000,
+          7889000,
+          1500000,
+          7893000
+        ],
+        [
+          "monitor.up.lower[4]",
+          "trench",
+          1440000,
+          7948500,
+          1500000,
+          7952500
+        ],
+        [
+          "monitor.up.lower[5]",
+          "trench",
+          1440000,
+          8008000,
+          1500000,
+          8012000
+        ],
+        [
+          "monitor.up.lower[6]",
+          "trench",
+          1440000,
+          8067500,
+          1500000,
+          8071500
+        ],
+        [
+          "monitor.up.lower[7]",
+          "trench",
+          1440000,
+          8127000,
+          1500000,
+          8131000
+        ],
+        [
+          "monitor.up.lower[8]",
+          "trench",
+          1440000,
+          8186500,
+          1500000,
+          8190500
+        ],
+        [
+          "monitor.up.lower[9]",
+          "trench",
+          1440000,
+          8246000,
+          1500000,
+          8250000
+        ],
+        [
+          "monitor.up.upper[0]",
+          "flow",
+          1370000,
+          7700000,
+          1430000,
+          7720000
+        ],
+        [
+          "monitor.up.upper[10]",
+          "flow",
+          1370000,
+          8300000,
+          1430000,
+          8320000
+        ],
+        [
+          "monitor.up.upper[1]",
+          "flow",
+          1370000,
+          7760000,
+          1430000,
+          7780000
+        ],
+        [
+          "monitor.up.upper[2]",
+          "flow",
+          1370000,
+          7820000,
+          1430000,
+          7840000
+        ],
+        [
+          "monitor.up.upper[3]",
+          "flow",
+          1370000,
+          7880000,
+          1430000,
+          7900000
+        ],
+        [
+          "monitor.up.upper[4]",
+          "flow",
+          1370000,
+          7940000,
+          1430000,
+          7960000
+        ],
+        [
+          "monitor.up.upper[5]",
+          "flow",
+          1370000,
+          8000000,
+          1430000,
+          8020000
+        ],
+        [
+          "monitor.up.upper[6]",
+          "flow",
+          1370000,
+          8060000,
+          1430000,
+          8080000
+        ],
+        [
+          "monitor.up.upper[7]",
+          "flow",
+          1370000,
+          8120000,
+          1430000,
+          8140000
+        ],
+        [
+          "monitor.up.upper[8]",
+          "flow",
+          1370000,
+          8180000,
+          1430000,
+          8200000
+        ],
+        [
+          "monitor.up.upper[9]",
+          "flow",
+          1370000,
+          8240000,
+          1430000,
+          8260000
+        ],
+        [
+          "outlet.pad",
+          "flow",
+          3550000,
+          11400000,
+          4450000,
+          12300000
+        ]
+      ],
+      "requirements": [
+        {
+          "bound": {
+            "at_most": 1.0
+          },
+          "measure": "reynolds",
+          "name": "slow",
+          "statement": "Flow is slow enough for the model to hold",
+          "subjects": [
+            "duct"
+          ]
+        }
+      ],
+      "glass_nm": [
+        75000000,
+        25000000,
+        1000000
+      ],
+      "size_nm": [
+        8000000,
+        16000000,
+        4000000
+      ],
+      "tunables": []
+    },
+    "passes": true
+  }
+}
