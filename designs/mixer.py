@@ -23,12 +23,7 @@ class Mixer(mf.Design):
 
     def build(self) -> None:
         width, pitch, apart = 200 * um, 600 * um, 4 * mm
-        self.meet = Junction(
-            inputs=3,
-            pitch=apart,
-            collector_width=width,
-            input_width=width,
-        ).at(5 * mm, 12 * mm)
+        self.meet = Junction(inputs=3, pitch=apart, collector_width=width, input_width=width).at(5 * mm, 12 * mm)
 
         # Each inlet stands under its input of the junction. A serpentine of three
         # runs leaves two pitches to the left of where it is entered, so each pad
@@ -38,24 +33,15 @@ class Mixer(mf.Design):
         self.third_in = AccessPad(channel_width=width).at(under, 2.5 * mm)
         self.second_in = AccessPad(channel_width=width).at(under + apart, 2.5 * mm)
         self.first_in = AccessPad(channel_width=width).at(under + apart * 2, 2.5 * mm)
-        self.third_resistor = Serpentine(
-            runs=3,
-            run_length=5.4 * mm,
-            width=width,
-            pitch=pitch,
-        ).attach(lambda resistor: resistor.inlet, to=self.third_in.opening, offset=clear)
-        self.second_resistor = Serpentine(
-            runs=3,
-            run_length=3.3 * mm,
-            width=width,
-            pitch=pitch,
-        ).attach(lambda resistor: resistor.inlet, to=self.second_in.opening, offset=clear)
-        self.first_resistor = Serpentine(
-            runs=3,
-            run_length=2 * mm,
-            width=width,
-            pitch=pitch,
-        ).attach(lambda resistor: resistor.inlet, to=self.first_in.opening, offset=clear)
+        self.third_resistor = Serpentine(runs=3, run_length=5.4 * mm, width=width, pitch=pitch).attach(
+            lambda resistor: resistor.inlet, to=self.third_in.opening, offset=clear
+        )
+        self.second_resistor = Serpentine(runs=3, run_length=3.3 * mm, width=width, pitch=pitch).attach(
+            lambda resistor: resistor.inlet, to=self.second_in.opening, offset=clear
+        )
+        self.first_resistor = Serpentine(runs=3, run_length=2 * mm, width=width, pitch=pitch).attach(
+            lambda resistor: resistor.inlet, to=self.first_in.opening, offset=clear
+        )
         self.third_lead = self.route(FLOW, width, self.third_in.opening, self.third_resistor.inlet)
         self.second_lead = self.route(FLOW, width, self.second_in.opening, self.second_resistor.inlet)
         self.first_lead = self.route(FLOW, width, self.first_in.opening, self.first_resistor.inlet)
@@ -63,12 +49,9 @@ class Mixer(mf.Design):
         self.second_feed = self.route(FLOW, width, self.second_resistor.outlet, self.meet.input[1])
         self.first_feed = self.route(FLOW, width, self.first_resistor.outlet, self.meet.input[2])
 
-        self.mixer = Serpentine(
-            runs=7,
-            run_length=4 * mm,
-            width=width,
-            pitch=pitch,
-        ).attach(lambda mixer: mixer.inlet, to=self.meet.outlet)
+        self.mixer = Serpentine(runs=7, run_length=4 * mm, width=width, pitch=pitch).attach(
+            lambda mixer: mixer.inlet, to=self.meet.outlet
+        )
         self.outlet = AccessPad(channel_width=width).attach(lambda pad: pad.opening, to=self.mixer.outlet, offset=clear)
         self.exit = self.route(FLOW, width, self.mixer.outlet, self.outlet.opening)
 
