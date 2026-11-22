@@ -43,55 +43,33 @@ class Mixer(mf.Design):
             run_length=5.4 * mm,
             width=width,
             pitch=pitch,
-        ).attach(
-            lambda resistor: resistor.inlet, to=self.third_in.opening, offset=clear
-        )
+        ).attach(lambda resistor: resistor.inlet, to=self.third_in.opening, offset=clear)
         self.second_resistor = Serpentine(
             runs=3,
             run_length=3.3 * mm,
             width=width,
             pitch=pitch,
-        ).attach(
-            lambda resistor: resistor.inlet, to=self.second_in.opening, offset=clear
-        )
+        ).attach(lambda resistor: resistor.inlet, to=self.second_in.opening, offset=clear)
         self.first_resistor = Serpentine(
             runs=3,
             run_length=2 * mm,
             width=width,
             pitch=pitch,
-        ).attach(
-            lambda resistor: resistor.inlet, to=self.first_in.opening, offset=clear
-        )
-        self.third_lead = self.route(
-            FLOW, width, self.third_in.opening, self.third_resistor.inlet
-        )
-        self.second_lead = self.route(
-            FLOW, width, self.second_in.opening, self.second_resistor.inlet
-        )
-        self.first_lead = self.route(
-            FLOW, width, self.first_in.opening, self.first_resistor.inlet
-        )
-        self.third_feed = self.route(
-            FLOW, width, self.third_resistor.outlet, self.meet.input[0]
-        )
-        self.second_feed = self.route(
-            FLOW, width, self.second_resistor.outlet, self.meet.input[1]
-        )
-        self.first_feed = self.route(
-            FLOW, width, self.first_resistor.outlet, self.meet.input[2]
-        )
+        ).attach(lambda resistor: resistor.inlet, to=self.first_in.opening, offset=clear)
+        self.third_lead = self.route(FLOW, width, self.third_in.opening, self.third_resistor.inlet)
+        self.second_lead = self.route(FLOW, width, self.second_in.opening, self.second_resistor.inlet)
+        self.first_lead = self.route(FLOW, width, self.first_in.opening, self.first_resistor.inlet)
+        self.third_feed = self.route(FLOW, width, self.third_resistor.outlet, self.meet.input[0])
+        self.second_feed = self.route(FLOW, width, self.second_resistor.outlet, self.meet.input[1])
+        self.first_feed = self.route(FLOW, width, self.first_resistor.outlet, self.meet.input[2])
 
         self.mixer = Serpentine(
             runs=7,
             run_length=4 * mm,
             width=width,
             pitch=pitch,
-        ).attach(
-            lambda mixer: mixer.inlet, to=self.meet.outlet
-        )
-        self.outlet = AccessPad(channel_width=width).attach(
-            lambda pad: pad.opening, to=self.mixer.outlet, offset=clear
-        )
+        ).attach(lambda mixer: mixer.inlet, to=self.meet.outlet)
+        self.outlet = AccessPad(channel_width=width).attach(lambda pad: pad.opening, to=self.mixer.outlet, offset=clear)
         self.exit = self.route(FLOW, width, self.mixer.outlet, self.outlet.opening)
 
         self.first, self.second, self.third = mf.Species(), mf.Species(), mf.Species()
