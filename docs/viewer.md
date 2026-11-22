@@ -3,7 +3,7 @@
 The VS Code extension in [`editors/vscode`](../editors/vscode) shows a design's chip beside its source and rebuilds it on save. This page covers installing it and what each part of the preview does. The preview draws a [scene](formats/scene-v4.md) that a [session](protocols/session.md) keeps current; the viewer itself knows nothing about chips beyond drawing that document.
 
 <p align="center">
-  <img src="assets/preview.png" alt="The mixer design in VS Code: its source beside the chip in 3D, with its checks, requirements and tunable parameters" width="100%">
+  <img src="assets/screenshot-mixer-3d-speed.png" alt="The mixer design in VS Code: its Python source beside a 3D chip coloured by flow speed, with passing verification checks" width="100%">
 </p>
 
 ## Install

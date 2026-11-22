@@ -87,7 +87,7 @@ def _about(region: type[Region]) -> str:
 
 
 def guide(arguments: Mapping[str, str]) -> Result:
-    return _result(True, resources.files("microfluidics").joinpath("guide.md").read_text())
+    return _result(True, resources.files("microfluidics").joinpath("guide.md").read_text(encoding="utf-8"))
 
 
 def regions(arguments: Mapping[str, str]) -> Result:

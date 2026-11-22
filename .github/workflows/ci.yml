@@ -4,6 +4,7 @@ on:
   push:
     branches: [master]
   pull_request:
+  workflow_call:
 
 jobs:
   check:
@@ -67,3 +68,6 @@ jobs:
           npm run check
           npm test
           npm run build
+
+  distributions:
+    uses: ./.github/workflows/distributions.yml

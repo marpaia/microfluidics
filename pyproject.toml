@@ -1,13 +1,24 @@
 [build-system]
-requires = ["maturin>=1.7,<2"]
+requires = ["maturin>=1.16,<2"]
 build-backend = "maturin"
 
 [project]
 name = "microfluidics"
-version = "0.1.0"
-description = "Design microfluidic chips as typed Python: regions, designs, and every check on them"
+version = "0.0.1"
+description = "Design, verify, and export microfluidic chips using typed Python"
 requires-python = ">=3.11"
 readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Repository = "https://github.com/marpaia/microfluidics"
 
 [project.scripts]
 microfluidics = "microfluidics.cli:main"
@@ -17,6 +28,11 @@ manifest-path = "crates/microfluidics-py/Cargo.toml"
 module-name = "microfluidics._engine"
 python-source = "python"
 features = ["pyo3/extension-module"]
+include = [
+    { path = "processes/*.toml", format = "sdist" },
+    { path = "rust-toolchain.toml", format = "sdist" },
+]
+exclude = ["**/__pycache__/**", "**/*.pyc"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

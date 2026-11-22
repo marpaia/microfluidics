@@ -5,7 +5,7 @@
 A soft-lithography chip is a few flat patterns, each built to one height. The tool works from that description: layout in the plane, and flow as a network of rectangular ducts. It has no solid modeller and no field solver.
 
 <p align="center">
-  <img src="docs/assets/preview.png" alt="The mixer design in VS Code: its source beside the chip in 3D, with its checks, requirements and tunable parameters" width="100%">
+  <img src="docs/assets/screenshot-mixer-3d-speed.png" alt="The mixer design in VS Code: its Python source beside a 3D chip coloured by flow speed, with passing verification checks" width="100%">
 </p>
 
 ## What it does
@@ -19,7 +19,14 @@ A soft-lithography chip is a few flat patterns, each built to one height. The to
 
 ## Quick start
 
-The package needs Python 3.11 or newer, a Rust toolchain (`rustup` reads the pinned version from `rust-toolchain.toml`), and [uv](https://docs.astral.sh/uv/).
+Install a published release with CPython 3.11 or newer.
+
+```console
+python -m pip install microfluidics
+microfluidics guide
+```
+
+To build from a checkout and run the example designs, use a Rust toolchain (`rustup` reads the pinned version from `rust-toolchain.toml`) and [uv](https://docs.astral.sh/uv/).
 
 ```console
 git clone https://github.com/marpaia/microfluidics.git
@@ -94,5 +101,6 @@ The tool has not yet produced a fabricated chip. The bundled process, `conservat
 | MCP server and benchmarks | [Agents and benchmarks](docs/agents-and-benchmarks.md) |
 | Commands | [Command reference](docs/reference/commands.md) |
 | Development | [Architecture](docs/development/architecture.md) and [testing](docs/development/testing.md) |
+| Python releases | [Release process](docs/development/releasing.md) |
 
 The complete index is at [`docs/README.md`](docs/README.md).

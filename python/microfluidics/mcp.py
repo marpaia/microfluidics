@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from importlib.metadata import version
 from typing import IO, Any
 
 from microfluidics import files
@@ -121,10 +122,10 @@ def answer(message: dict[str, Any], root: str) -> dict[str, Any] | None:
     result: dict[str, Any]
     if method == "initialize":
         asked = (message.get("params") or {}).get("protocolVersion")
-        version = asked if asked in VERSIONS else VERSIONS[0]
-        info = {"name": "microfluidics", "version": "0.1.0"}
+        protocol_version = asked if asked in VERSIONS else VERSIONS[0]
+        info = {"name": "microfluidics", "version": version("microfluidics")}
         result = {
-            "protocolVersion": version,
+            "protocolVersion": protocol_version,
             "capabilities": {"tools": {}},
             "serverInfo": info,
             "instructions": INSTRUCTIONS,
