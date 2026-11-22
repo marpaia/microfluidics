@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import pytest
 from conftest import DESIGNS, ROOT
 
 TEST_CHANNEL = (DESIGNS / "test_channel.py").read_text()
@@ -99,6 +100,32 @@ def test_a_design_is_checked_exported_and_its_faults_point_at_its_source(tmp_pat
     solved = run(tmp_path, "solve", "hanging.py")
     assert solved.returncode == 1 and "is NOT sound as drawn" in solved.stdout, solved
     assert "connectivity                 VIOLATED" in solved.stdout
+
+
+@pytest.mark.parametrize(
+    ("measure", "bound", "message"),
+    [
+        ("reynolds", "at_most(1 * mbar)", "the upper bound must be a plain number, not a pressure"),
+        ("flow", "at_least(1)", "the lower bound must be a flow rate, not a plain number"),
+        ("shear", "target(1 * mbar, within=1 * mm)", "the target tolerance must be a pressure, not a length"),
+        (
+            "shear",
+            "target(1 * mbar, within=1 * mbar, relative=True)",
+            "the target tolerance must be a plain number, not a pressure",
+        ),
+        ("velocity", "at_most(1 * mm)", "the upper bound must be a velocity, not a length"),
+        ("flow", "equal_within(1 * mbar)", "the allowed spread must be a plain number, not a pressure"),
+    ],
+)
+def test_solve_reports_bound_dimension_errors_at_the_requirement(
+    tmp_path: Path, measure: str, bound: str, message: str
+) -> None:
+    source = TEST_CHANNEL.replace("mf.reynolds(self.duct), mf.at_most(1.0)", f"mf.{measure}(self.duct), mf.{bound}")
+    (tmp_path / "channel.py").write_text(source)
+    line = next(n for n, text in enumerate(source.splitlines(), 1) if "self.slow =" in text)
+    result = run(tmp_path, "solve", "channel.py")
+    assert result.returncode == 2
+    assert result.stderr.strip() == f"channel.py:{line}: {message}"
 
 
 def test_closing_a_design_writes_what_was_tuned_beside_it(tmp_path: Path) -> None:

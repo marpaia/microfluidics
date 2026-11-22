@@ -4,6 +4,8 @@ use std::collections::BTreeMap;
 
 use serde::Serialize;
 
+use crate::Dim;
+
 /// What is applied at an access point, in SI units.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -48,6 +50,17 @@ pub enum Measure {
 }
 
 impl Measure {
+    /// The physical dimension of each measured value.
+    pub fn dimension(&self) -> Dim {
+        match self {
+            Self::Flow => Dim::FLOW,
+            Self::Pressure | Self::Drop | Self::Shear => Dim::PRESSURE,
+            Self::Velocity => Dim::VELOCITY,
+            Self::Residence => Dim::TIME,
+            Self::Reynolds | Self::Fraction { .. } | Self::Yield => Dim::NONE,
+        }
+    }
+
     /// The unit a measure is reported in, and how many of them make one SI unit.
     pub fn reported(&self) -> (&'static str, f64) {
         match self {

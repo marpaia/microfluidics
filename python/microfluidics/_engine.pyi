@@ -191,7 +191,7 @@ class Builder:
         statement: str,
         measure: tuple[str, str | None],
         subjects: Sequence[str],
-        bound: tuple[str, float, float, bool],
+        bound: tuple[str, Quantity | float, Quantity | float, bool],
         file: str,
         line: int,
     ) -> None: ...

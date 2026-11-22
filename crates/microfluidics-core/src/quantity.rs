@@ -20,6 +20,7 @@ impl Dim {
     pub const TIME: Dim = Dim::new(0, 0, 1);
     pub const PRESSURE: Dim = Dim::new(-1, 1, -2);
     pub const FLOW: Dim = Dim::new(3, 0, -1);
+    pub const VELOCITY: Dim = Dim::new(1, 0, -1);
     pub const VISCOSITY: Dim = Dim::new(-1, 1, -1);
 
     pub const fn new(length: i8, mass: i8, time: i8) -> Self {
@@ -34,6 +35,7 @@ impl Dim {
             Dim::TIME => "a time".to_owned(),
             Dim::PRESSURE => "a pressure".to_owned(),
             Dim::FLOW => "a flow rate".to_owned(),
+            Dim::VELOCITY => "a velocity".to_owned(),
             Dim::VISCOSITY => "a viscosity".to_owned(),
             Dim {
                 length: 2,

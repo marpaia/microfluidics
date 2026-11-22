@@ -422,7 +422,7 @@ impl PyBuilder {
     }
 
     /// A requirement. `measure` is its kind and, for a fraction, a species; `bound` is its
-    /// kind and its numbers in SI units.
+    /// kind and the quantities supplied by the design.
     #[allow(clippy::too_many_arguments)]
     fn require(
         &mut self,
@@ -430,7 +430,7 @@ impl PyBuilder {
         statement: &str,
         measure: (String, Option<String>),
         subjects: Vec<String>,
-        bound: (String, f64, f64, bool),
+        bound: (String, Bound<'_, PyAny>, Bound<'_, PyAny>, bool),
         file: &str,
         line: u32,
     ) -> PyResult<()> {
@@ -447,15 +447,16 @@ impl PyBuilder {
             (other, _) => return Err(stated(format!("`{other}` is not something measured"))),
         };
         let (kind, value, within, relative) = bound;
+        let dim = measure.dimension();
         let bound = match kind.as_str() {
-            "equal_within" => Limit::EqualWithin(value),
+            "equal_within" => Limit::EqualWithin(si(&value, Dim::NONE, "the allowed spread")?),
             "target" => Limit::Is {
-                value,
-                within,
+                value: si(&value, dim, "the target")?,
+                within: si(&within, if relative { Dim::NONE } else { dim }, "the target tolerance")?,
                 relative,
             },
-            "at_most" => Limit::AtMost(value),
-            "at_least" => Limit::AtLeast(value),
+            "at_most" => Limit::AtMost(si(&value, dim, "the upper bound")?),
+            "at_least" => Limit::AtLeast(si(&value, dim, "the lower bound")?),
             other => return Err(stated(format!("`{other}` is not a bound"))),
         };
         let requirement = Requirement {

@@ -86,14 +86,10 @@ def chip_yield() -> Measure[float]:
     return Measure("yield", ())
 
 
-def _si(value: object) -> float:
-    return value.si if isinstance(value, Quantity) else float(value)  # type: ignore[arg-type]
-
-
 class Bound(Generic[DimensionT]):
     """What a measure's values must be."""
 
-    def __init__(self, kind: str, value: float, within: float = 0.0, relative: bool = False) -> None:
+    def __init__(self, kind: str, value: DimensionT, within: DimensionT | float = 0.0, relative: bool = False) -> None:
         self.kind, self.value, self.within, self.relative = kind, value, within, relative
 
 
@@ -105,17 +101,17 @@ def equal_within(share: float) -> Bound[Any]:
 
 def target(value: DimensionT, *, within: DimensionT | float, relative: bool = False) -> Bound[DimensionT]:
     """Every value within `within` of `value`; with `relative`, within that fraction of it."""
-    return Bound("target", _si(value), _si(within), relative)
+    return Bound("target", value, within, relative)
 
 
 def at_most(value: DimensionT) -> Bound[DimensionT]:
     """Every value no more than `value`."""
-    return Bound("at_most", _si(value))
+    return Bound("at_most", value)
 
 
 def at_least(value: DimensionT) -> Bound[DimensionT]:
     """Every value no less than `value`."""
-    return Bound("at_least", _si(value))
+    return Bound("at_least", value)
 
 
 class Requirement(Named, Generic[DimensionT]):

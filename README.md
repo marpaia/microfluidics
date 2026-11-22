@@ -23,38 +23,25 @@ Install a published release with CPython 3.11 or newer.
 
 ```console
 python -m pip install microfluidics
-microfluidics guide
 ```
 
-To build from a checkout and run the example designs, use a Rust toolchain (`rustup` reads the pinned version from `rust-toolchain.toml`) and [uv](https://docs.astral.sh/uv/).
-
-```console
-git clone https://github.com/marpaia/microfluidics.git
-cd microfluidics
-uv venv && source .venv/bin/activate
-uv pip install maturin && maturin develop
-microfluidics solve designs/mixer.py
-microfluidics export designs/mixer.py runs/mixer
-```
-
-[`designs/mixer.py`](designs/mixer.py) meters three liquids into one stream in shares of 50 %, 30 % and 20 %, set by the length of each liquid's path to a junction. `solve` extracts its flow network and reports each share against its target. `export` runs every check and writes `REPORT.md`, `report.json` and the masks under `runs/mixer/`.
-
-The design marks two serpentine lengths as tunable. `microfluidics close designs/mixer.py` adjusts them until the shares sit exactly on target and writes the values to `designs/mixer.tuned.toml`, leaving the source unchanged.
-
-[Getting started](docs/getting-started.md) walks through checking, solving, closing and exporting a design, and how to read the report.
-
-## A design
-
-This is [`designs/test_channel.py`](designs/test_channel.py) without its process monitor:
+Save the following as `test_channel.py`. It places a straight channel between two pads, applies a pressure difference, and checks that the channel's Reynolds number stays at or below 1.
 
 ```python
+import microfluidics as mf
+from microfluidics.layers import FLOW
+from microfluidics.processes import CONSERVATIVE_SU8_PDMS
+from microfluidics.regions import AccessPad, StraightChannel
+from microfluidics.units import mbar, mm, mPa_s, um
+
+
 class TestChannel(mf.Design):
     """One straight channel between two pads."""
 
     process = CONSERVATIVE_SU8_PDMS
     slab = mf.Slab(8 * mm, 16 * mm, thickness=4 * mm)
     glass = mf.Glass(75 * mm, 25 * mm, thickness=1 * mm)
-    layers = mf.Stack({TRENCH: mf.LayerSpec(height=1.1 * um, gds=1), FLOW: mf.LayerSpec(height=20 * um, gds=2)})
+    layers = mf.Stack({FLOW: mf.LayerSpec(height=20 * um, gds=2)})
 
     def build(self) -> None:
         self.inlet = AccessPad().at(4 * mm, 2.5 * mm)
@@ -65,7 +52,17 @@ class TestChannel(mf.Design):
         self.slow = mf.Requirement("Flow is slow enough for the model to hold", mf.reynolds(self.duct), mf.at_most(1.0))
 ```
 
-Assigning to an attribute names the thing: `self.inlet` is the pad `inlet`, and findings and tuned values refer to it by that path. Every rectangle, port and region also records the source line that made it, so a finding points at the line that caused it.
+Run the flow solve from the directory containing the file.
+
+```console
+microfluidics solve test_channel.py
+```
+
+The solver reports `requirement/slow` as satisfied. The modeled Reynolds number in `duct` is about 0.12 at the specified pressure difference of 10 mbar.
+
+To generate masks, run `microfluidics export test_channel.py out`. Open `out/REPORT.md` for the checks and `out/masks/preview.svg` for the layout.
+
+[Getting started](docs/getting-started.md) covers building from source and tuning an eight-lane design that initially fails its flow requirement.
 
 ## Examples
 

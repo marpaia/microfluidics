@@ -26,6 +26,17 @@ def main() -> None:
     cli = Path(sysconfig.get_path("scripts")) / executable
     module = [sys.executable, "-I", "-X", "utf8", "-m", "microfluidics"]
     with tempfile.TemporaryDirectory() as workdir:
+        # Run the example a reader copies from the package description on PyPI.
+        description = installed.metadata["Description"]
+        example = description.split("```python\n", 1)[1].split("\n```", 1)[0]
+        Path(workdir, "test_channel.py").write_text(example, encoding="utf-8")
+        solved = subprocess.check_output([*module, "solve", "test_channel.py", "--json"], cwd=workdir)
+        checks = json.loads(solved)["checks"]
+        assert any(check["id"] == "requirement/slow" and check["status"] == "satisfied" for check in checks)
+        subprocess.run([*module, "export", "test_channel.py", "out"], cwd=workdir, check=True)
+        for artifact in ("REPORT.md", "masks/preview.svg"):
+            assert Path(workdir, "out", artifact).is_file(), artifact
+
         guide = subprocess.check_output(
             [cli, "guide"],
             cwd=workdir,
