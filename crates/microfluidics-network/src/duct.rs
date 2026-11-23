@@ -1,7 +1,8 @@
 //! Flow in a straight rectangular duct. This is the only flow physics in the crate.
 //!
-//! Flow is taken as steady, laminar and fully developed, which holds at the Reynolds numbers of
-//! these chips. Bends, junctions and entrances add nothing here.
+//! Flow is taken as steady, laminar and fully developed, with pressure lost to viscosity alone.
+//! What an entrance, a bend or a junction loses to the fluid's inertia is left out; the solution's
+//! own check says when that is too much to leave out.
 
 use std::f64::consts::PI;
 
@@ -32,6 +33,15 @@ pub fn wall_shear(viscosity: f64, flow: f64, width: f64, height: f64) -> f64 {
     6.0 * viscosity * flow.abs() / (long * short.powi(2) * fill(long, short))
 }
 
+/// The Reynolds number above which flow in a duct may stop being laminar.
+pub const LAMINAR_LIMIT: f64 = 2000.0;
+
+/// The dynamic pressure of a duct's mean flow, in pascals: to order of magnitude, what the fluid's
+/// inertia loses at an entrance, a bend or a junction.
+pub fn dynamic_pressure(density: f64, flow: f64, width: f64, height: f64) -> f64 {
+    0.5 * density * (flow / (width * height)).powi(2)
+}
+
 /// The Reynolds number of a duct, on its hydraulic diameter.
 pub fn reynolds(density: f64, viscosity: f64, flow: f64, width: f64, height: f64) -> f64 {
     let hydraulic = 2.0 * width * height / (width + height);
@@ -40,7 +50,7 @@ pub fn reynolds(density: f64, viscosity: f64, flow: f64, width: f64, height: f64
 
 #[cfg(test)]
 mod tests {
-    use crate::duct::{resistance_per_viscosity, reynolds, wall_shear};
+    use crate::duct::{dynamic_pressure, resistance_per_viscosity, reynolds, wall_shear};
 
     #[test]
     fn the_series_gives_the_known_limits() {
@@ -66,6 +76,8 @@ mod tests {
             "{shear}"
         );
         // Water at 1 uL/min in a 100 x 20 um duct: far below 1.
+        // Water at a metre a second carries half a kilopascal of dynamic pressure.
+        assert!((dynamic_pressure(1000.0, 2e-9, 100e-6, 20e-6) - 500.0).abs() < 1e-9);
         let slow = reynolds(1000.0, 1e-3, 1e-9 / 60.0, 100e-6, 20e-6);
         assert!((slow - 0.2778).abs() < 1e-3, "{slow}");
     }

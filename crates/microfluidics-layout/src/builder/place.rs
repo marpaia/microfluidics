@@ -101,7 +101,7 @@ impl Builder {
             slab: None,
             glass: None,
             stack: Vec::new(),
-            process: None,
+            processes: Vec::new(),
             own_conditions: self.own_conditions,
         })
     }

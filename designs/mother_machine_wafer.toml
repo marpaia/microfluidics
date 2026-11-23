@@ -1,0 +1,10 @@
+# A 100 mm wafer of eight mother-machine chips, made at COSINC.
+name = "mother-machine-wafer"
+diameter_mm = 100.0
+edge_exclusion_mm = 5.0
+street_mm = 1.0
+
+[[chips]]
+design = "mother_machine.py"
+columns = 4
+rows = 2

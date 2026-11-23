@@ -8,15 +8,18 @@ mod chip;
 mod connectivity;
 mod error;
 mod export;
+mod fab;
 mod fingerprint;
 #[cfg(test)]
 mod fixtures;
 mod format;
 mod gds;
 mod geometry;
+mod handoff;
 mod label;
 mod mask;
 mod maskspec;
+mod outline;
 mod plan;
 mod print;
 mod process;
@@ -33,15 +36,18 @@ pub use crate::chip::Chip;
 pub use crate::connectivity::{Connectivity, Net, connectivity};
 pub use crate::error::LayoutError;
 pub use crate::export::{ExportError, Exported, export};
+pub use crate::fab::{Drawing, Fab, Handoff, Step};
 pub use crate::fingerprint::fingerprint;
 pub use crate::format::{Dxf, Format, Gds, Svg, read_dxf};
 pub use crate::gds::{
     GdsError, GdsLibrary, GdsStructure, Reference, read as gds_read, readback as gds_readback, write as gds_write,
 };
 pub use crate::geometry::{Direction, Point, Rect, TOLERANCE};
+pub use crate::handoff::{Sheet, sheet};
 pub use crate::mask::{Mask, MaskSet, prepare};
 pub use crate::maskspec::{MaskSpec, PrintModel, Tone};
-pub use crate::plan::Layout;
+pub use crate::outline::{outlines, union_area};
+pub use crate::plan::{Fiducial, Layout};
 pub use crate::print::{check as print_check, solve_bias};
 pub use crate::process::{Process, ProcessError, Rule, RuleKind, Tolerances};
 pub use crate::rectangle::{Port, Rectangle};

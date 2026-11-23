@@ -11,10 +11,18 @@ _STATUS = {"satisfied": "satisfied", "violated": "VIOLATED", "waived": "waived",
 
 
 def checks(held: Sequence[Check]) -> str:
-    """Each check on a line, with what it found beneath it."""
+    """Each check on a line, with what it found beneath it. Those made against a process follow
+    its name, after those that hold whatever makes the chip."""
     lines: list[str] = []
-    for check in held:
-        lines.append(f"  {check.id:<28} {_STATUS.get(check.status, check.status)}")
+    named: str | None = None
+    # Processes in the order they first appear, each with every check made against it.
+    order = list(dict.fromkeys(check.process for check in held if check.process is not None))
+    for check in sorted(held, key=lambda check: -1 if check.process is None else order.index(check.process)):
+        if check.process is not None and check.process != named:
+            named = check.process
+            lines.append(f"  at {named}")
+        indent = "    " if check.process is not None else "  "
+        lines.append(f"{indent}{check.id:<28} {_STATUS.get(check.status, check.status)}")
         for finding in check.findings[:SHOWN]:
             waived = f" (waived: {finding.waived})" if finding.waived else ""
             lines.append(f"      {finding.message}{waived}")

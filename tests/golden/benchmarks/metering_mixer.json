@@ -3,6 +3,7 @@
   "checks": [
     {
       "id": "benchmark/regions",
+      "process": null,
       "status": "satisfied",
       "findings": 0,
       "metrics": {
@@ -14,12 +15,68 @@
     },
     {
       "id": "deterministic",
+      "process": null,
       "status": "satisfied",
       "findings": 0,
       "metrics": {}
     },
     {
+      "id": "connectivity",
+      "process": null,
+      "status": "satisfied",
+      "findings": 0,
+      "metrics": {
+        "components": 1.0,
+        "edges": 19.0,
+        "nets": 13.0,
+        "open_to_flow": 1.0,
+        "ports": 14.0
+      }
+    },
+    {
+      "id": "graph",
+      "process": null,
+      "status": "satisfied",
+      "findings": 0,
+      "metrics": {
+        "conservation_residual": 5.882877949710192e-14,
+        "edges": 19.0,
+        "edges_without_flow": 0.0,
+        "inertial_loss_percent": 0.007827846530847456,
+        "max_reynolds": 0.33178169304535526,
+        "vertices": 20.0
+      }
+    },
+    {
+      "id": "requirement/buffer_share",
+      "process": null,
+      "status": "satisfied",
+      "findings": 0,
+      "metrics": {
+        "outlet": 89.17902811428141
+      }
+    },
+    {
+      "id": "requirement/reagent_share",
+      "process": null,
+      "status": "satisfied",
+      "findings": 0,
+      "metrics": {
+        "outlet": 10.741018089410792
+      }
+    },
+    {
+      "id": "requirement/sample_share",
+      "process": null,
+      "status": "satisfied",
+      "findings": 0,
+      "metrics": {
+        "outlet": 0.07995379630094765
+      }
+    },
+    {
       "id": "rules",
+      "process": "flowjem-su8-pdms",
       "status": "satisfied",
       "findings": 0,
       "metrics": {
@@ -35,19 +92,8 @@
       }
     },
     {
-      "id": "connectivity",
-      "status": "satisfied",
-      "findings": 0,
-      "metrics": {
-        "components": 1.0,
-        "edges": 19.0,
-        "nets": 13.0,
-        "open_to_flow": 1.0,
-        "ports": 14.0
-      }
-    },
-    {
       "id": "mask-rules",
+      "process": "flowjem-su8-pdms",
       "status": "satisfied",
       "findings": 0,
       "metrics": {
@@ -64,6 +110,7 @@
     },
     {
       "id": "gds-readback",
+      "process": "flowjem-su8-pdms",
       "status": "satisfied",
       "findings": 0,
       "metrics": {
@@ -73,53 +120,8 @@
       }
     },
     {
-      "id": "print",
-      "status": "satisfied",
-      "findings": 0,
-      "metrics": {
-        "flow.checked": 0.0,
-        "flow.failing": 0.0,
-        "flow.worst_error_um": 0.0
-      }
-    },
-    {
-      "id": "graph",
-      "status": "satisfied",
-      "findings": 0,
-      "metrics": {
-        "conservation_residual": 5.882877949710192e-14,
-        "edges": 19.0,
-        "edges_without_flow": 0.0,
-        "max_reynolds": 0.33178169304535526,
-        "vertices": 20.0
-      }
-    },
-    {
-      "id": "requirement/buffer_share",
-      "status": "satisfied",
-      "findings": 0,
-      "metrics": {
-        "outlet": 89.17902811428141
-      }
-    },
-    {
-      "id": "requirement/reagent_share",
-      "status": "satisfied",
-      "findings": 0,
-      "metrics": {
-        "outlet": 10.741018089410792
-      }
-    },
-    {
-      "id": "requirement/sample_share",
-      "status": "satisfied",
-      "findings": 0,
-      "metrics": {
-        "outlet": 0.07995379630094765
-      }
-    },
-    {
       "id": "corners",
+      "process": "flowjem-su8-pdms",
       "status": "satisfied",
       "findings": 0,
       "metrics": {

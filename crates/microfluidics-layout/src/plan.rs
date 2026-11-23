@@ -1,4 +1,4 @@
-//! The layout: rectangles, structures and translates, with ports and access points.
+//! The layout: rectangles, structures and translates, with ports, access points and fiducials.
 //!
 //! Coordinates are metres. A layout holds each feature once: either as a rectangle of its own, or
 //! as a structure that translates place many times.
@@ -11,6 +11,13 @@ use crate::geometry::{Point, Rect, bounds};
 use crate::rectangle::{Port, Rectangle};
 use crate::structure::{Structure, Translates};
 
+/// A point one layer is aligned to another by: the centre of an alignment mark.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct Fiducial {
+    pub name: String,
+    pub position: Point,
+}
+
 #[derive(Debug, Clone, PartialEq, Default, Serialize)]
 pub struct Layout {
     pub rectangles: Vec<Rectangle>,
@@ -19,6 +26,8 @@ pub struct Layout {
     pub ports: Vec<Port>,
     /// Where tubing reaches the layout from outside: the centres of punched holes.
     pub access: Vec<Point>,
+    /// The centres of the marks later layers are aligned to the first by.
+    pub fiducials: Vec<Fiducial>,
 }
 
 impl Layout {
@@ -95,6 +104,11 @@ impl Layout {
                 .into_iter()
                 .map(|point| point.turned(quarter_turns).moved(by)),
         );
+        self.fiducials
+            .extend(other.fiducials.into_iter().map(|fiducial| Fiducial {
+                name: format!("{prefix}{}", fiducial.name),
+                position: fiducial.position.turned(quarter_turns).moved(by),
+            }));
         self.structures.extend(other.structures);
     }
 }

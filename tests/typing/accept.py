@@ -4,6 +4,7 @@ from typing import assert_type
 
 import microfluidics as mf
 from microfluidics.layers import FLOW
+from microfluidics.processes import COSINC_SU8_PDMS, FLOWJEM_SU8_PDMS
 from microfluidics.regions import AccessPad, Manifold, TrenchLane
 from microfluidics.units import FlowRate, Length, Pressure, mbar, mm, mPa_s, pct, ul_min, um
 
@@ -28,6 +29,12 @@ assert_type(mf.at_most(1 * mbar), mf.Bound[Pressure])
 mf.Requirement("Cells are not sheared off", mf.shear(lane), mf.at_most(1 * mbar))
 mf.Requirement("Every lane gets the same flow", mf.flow([lane, lane]), mf.equal_within(5 * pct))
 mf.Requirement("A tenth is dye", mf.fraction(mf.Species(), lane), mf.target(10 * pct, within=1 * pct, relative=True))
+
+
+class Sent(mf.Design):
+    """A design names every process it is made in."""
+
+    processes = (FLOWJEM_SU8_PDMS, COSINC_SU8_PDMS)
 
 
 class Spur(mf.Region):

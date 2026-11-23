@@ -1,19 +1,19 @@
 //! A design as it sits on disk: its file, what was tuned, what a person waived, and the
-//! process it names.
+//! processes it names.
 
 use std::collections::BTreeMap;
 use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use microfluidics_core::{Check, Waiver};
+use microfluidics_core::{Check, Sha256Hex, Waiver};
 use microfluidics_layout::{
-    Build, BuildError, MaskSet, Origin, Overrides, Process, Wafer, WaferSpec, assemble, export, prepare, waivers,
+    Build, BuildError, MaskSet, Origin, Overrides, Process, Wafer, WaferSpec, assemble, export, sheet, waivers,
 };
 
 use crate::analysis::AnalysisError;
 use crate::close::{Closure, close};
-use crate::verify::{Report, Verified, verify};
+use crate::verify::{Made, Report, Verified, verify};
 
 /// Why a design, or something beside it, could not be read, built or written.
 #[derive(Debug, Clone, PartialEq)]
@@ -72,8 +72,9 @@ pub struct Project<'a> {
     pub overrides: Overrides,
     /// What a person waived: `<design>.waivers.toml`, when it is there.
     pub waivers: Vec<Waiver>,
-    /// The process the design names: `<name>.toml` beside the design, or one built in.
-    pub process: Option<Process>,
+    /// The processes the design names, in its order: each `<name>.toml` beside the design, or
+    /// one built in.
+    pub processes: Vec<Process>,
 }
 
 /// What an export wrote.
@@ -126,16 +127,18 @@ impl<'a> Project<'a> {
             Ok(text) => Overrides::parse(&tuned.display().to_string(), &text).map_err(ProjectError::of)?,
             Err(_) => Overrides::default(),
         };
-        // The process is the one the design names, which building it gives.
-        let named = build(&overrides)?.process;
+        // The processes are those the design names, which building it gives.
+        let named = build(&overrides)?.processes;
         let dir = file.parent().unwrap_or(Path::new("."));
-        let process = named.map(|name| process_named(&name, dir)).transpose()?;
+        let processes = (named.iter())
+            .map(|name| process_named(name, dir))
+            .collect::<Result<_, _>>()?;
         Ok(Self {
             file: file.to_owned(),
             build,
             overrides,
             waivers,
-            process,
+            processes,
         })
     }
 
@@ -146,18 +149,13 @@ impl<'a> Project<'a> {
 
     /// Every check, with the design as it is tuned.
     pub fn verify(&self) -> Result<Verified, ProjectError> {
-        Ok(verify(
-            self.build,
-            &self.overrides,
-            self.process.as_ref(),
-            &self.waivers,
-        )?)
+        Ok(verify(self.build, &self.overrides, &self.processes, &self.waivers)?)
     }
 
     /// Tune the design, from its source, until its requirements hold, and keep what was tuned
     /// beside it.
     pub fn close(&mut self) -> Result<Closure, ProjectError> {
-        let closure = close(self.build, &Overrides::default(), self.process.as_ref(), &self.waivers)?;
+        let closure = close(self.build, &Overrides::default(), &self.processes, &self.waivers)?;
         write(&self.tuned_path(), &closure.overrides.toml())?;
         self.overrides = closure.overrides.clone();
         Ok(closure)
@@ -175,36 +173,80 @@ impl<'a> Project<'a> {
         Ok(())
     }
 
-    /// Verify the design and write what fabrication needs into `dir`: the masks, the report
-    /// as `REPORT.md` and `report.json`, and the elaborated design as `design.json`.
+    /// Verify the design and write what fabrication needs into `dir`: the elaborated design as
+    /// `design.json`, every check as `report.json`, and for each process a folder of its name
+    /// holding its masks, its report as `REPORT.md`, and the sheet for its fab when it names one.
+    /// A design that names no process has its masks and report written into `dir` itself.
     pub fn export(&self, dir: &Path) -> Result<Exported, ProjectError> {
         let verified = self.verify()?;
-        let written = export(&verified.masks, self.process.as_ref(), &dir.join("masks")).map_err(ProjectError::of)?;
         let mut report = verified.report;
-        // The GDSII file was already read back in verification; the drawings are read back here.
-        report
-            .checks
-            .extend(written.checks.into_iter().filter(|check| check.id != "gds-readback"));
+        let mut written = Vec::new();
+        for made in &verified.made {
+            let name = made.process.as_ref().map(|process| process.name.as_str());
+            let folder = name.map_or_else(String::new, |name| format!("{name}/"));
+            let wrote = export(&made.masks, made.process.as_ref(), &dir.join(&folder).join("masks"))
+                .map_err(ProjectError::of)?;
+            // The GDSII file was already read back in verification; the drawings are read back here.
+            let read_back = wrote.checks.into_iter().filter(|check| check.id != "gds-readback");
+            report.checks.extend(read_back.map(|check| check.for_process(name)));
+            let mut files: Vec<String> = wrote.files.iter().map(|file| format!("masks/{file}")).collect();
+            // The sheet for whoever makes the chip, naming each mask file by its hash.
+            let on_masks = |check: &&Check| check.id == "mask-rules" && check.process.as_deref() == name;
+            if let (Some(process), Some(rules)) = (&made.process, report.checks.iter().find(on_masks)) {
+                let mut hashed = Vec::new();
+                for file in &files {
+                    let hash = Sha256Hex::of_file(&dir.join(&folder).join(file)).map_err(ProjectError::of)?;
+                    hashed.push((file.clone(), hash.as_str().to_owned()));
+                }
+                let chip = &verified.analysis.elaborated.chip;
+                if let Some(sheet) = sheet(&report.design, chip, &made.masks, process, rules, &hashed) {
+                    write(&dir.join(&folder).join(sheet.file), &sheet.text)?;
+                    files.insert(0, sheet.file.to_owned());
+                }
+            }
+            written.push((folder, files));
+        }
         report.judge();
         let elaborated = serde_json::to_string_pretty(&verified.analysis.elaborated).map_err(ProjectError::of)?;
-        write(&dir.join("report.json"), &report.json())?;
-        write(&dir.join("REPORT.md"), &report.markdown())?;
         write(&dir.join("design.json"), &elaborated)?;
-        let mut files: Vec<String> = ["REPORT.md", "report.json", "design.json"].map(str::to_owned).into();
-        files.extend(written.files.iter().map(|file| format!("masks/{file}")));
+        write(&dir.join("report.json"), &report.json())?;
+        let mut files: Vec<String> = ["design.json", "report.json"].map(str::to_owned).into();
+        for (made, (folder, written)) in verified.made.iter().zip(written) {
+            let bearing = match &made.process {
+                Some(process) => report.for_process(&process.name),
+                None => report.clone(),
+            };
+            write(&dir.join(&folder).join("REPORT.md"), &bearing.markdown())?;
+            files.push(format!("{folder}REPORT.md"));
+            files.extend(written.iter().map(|file| format!("{folder}{file}")));
+        }
         Ok(Exported { report, files })
     }
 }
 
-/// A design a wafer names, verified: what `open` gives for its file.
-pub type Opened = (Verified, Option<Process>);
+/// The chip as the process `wanted` makes it, among those `verified` holds; with none wanted,
+/// the only one there is.
+fn made_in<'a>(verified: &'a Verified, wanted: Option<&str>, design: &str) -> Result<&'a Made, ProjectError> {
+    let named = |made: &&Made| made.process.as_ref().map(|process| process.name.as_str()) == wanted;
+    match (wanted, verified.made.as_slice()) {
+        (None, [only]) => Ok(only),
+        (None, _) => Err(ProjectError::of(format!(
+            "`{design}` names {} processes; the wafer must say which it is made in with `process = \"<name>\"`",
+            verified.made.len()
+        ))),
+        (Some(name), made) => made
+            .iter()
+            .find(named)
+            .ok_or_else(|| ProjectError::of(format!("the wafer is made in `{name}`, which `{design}` does not name"))),
+    }
+}
 
 /// Assemble the wafer the file `file` states and write its masks into `dir`. `open` signs off
 /// the design in a file the wafer names, which lies beside the wafer's own.
 pub fn export_wafer(
     file: &Path,
     dir: &Path,
-    open: &dyn Fn(&Path) -> Result<Opened, ProjectError>,
+    open: &dyn Fn(&Path) -> Result<Verified, ProjectError>,
 ) -> Result<WaferExported, ProjectError> {
     let spec = WaferSpec::parse(&file.display().to_string(), &read(file)?).map_err(ProjectError::of)?;
     let beside = file.parent().unwrap_or(Path::new("."));
@@ -215,13 +257,15 @@ pub fn export_wafer(
         if chips.contains_key(&block.design) {
             continue;
         }
-        let (verified, named) = open(&beside.join(&block.design))?;
-        passes.insert(block.design.clone(), verified.report.passes);
-        chips.insert(
-            block.design.clone(),
-            prepare(&verified.analysis.elaborated.chip, named.as_ref()),
-        );
-        process = process.or(named);
+        let verified = open(&beside.join(&block.design))?;
+        let made = made_in(&verified, spec.process.as_deref(), &block.design)?;
+        let passes_there = match &made.process {
+            Some(process) => verified.report.for_process(&process.name).passes,
+            None => verified.report.passes,
+        };
+        passes.insert(block.design.clone(), passes_there);
+        chips.insert(block.design.clone(), made.masks.clone());
+        process = process.or(made.process.clone());
     }
     let wafer = assemble(&spec, &chips).map_err(ProjectError::of)?;
     let written = export(&wafer.masks, process.as_ref(), dir).map_err(ProjectError::of)?;

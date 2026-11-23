@@ -3,10 +3,10 @@ import { test } from "node:test";
 
 import type { Scene, SceneCheck, SceneFinding } from "../src/scene";
 import { type Arrangement, arrangement, panelSize } from "../src/viewer/arrangement";
-import { headline, listed, problems, shortened, standings, waived } from "../src/viewer/verification";
+import { headline, keyOf, listed, named, problems, shortened, standings, waived } from "../src/viewer/verification";
 
-const check = (id: string, group: SceneCheck["group"], status = "satisfied", note: string | null = null): SceneCheck => ({ id, title: id, group, status, note, metrics: {} });
-const finding = (id: string, group: SceneFinding["group"], message: string, waivedBy: string | null = null): SceneFinding => ({ check: id, group, rule: id, message, waived: waivedBy, paths: [], origin: null });
+const check = (id: string, group: SceneCheck["group"], status = "satisfied", note: string | null = null, process: string | null = null): SceneCheck => ({ id, title: id, group, status, note, metrics: {}, process });
+const finding = (id: string, group: SceneFinding["group"], message: string, waivedBy: string | null = null, process: string | null = null): SceneFinding => ({ check: id, process, group, rule: id, message, waived: waivedBy, paths: [], origin: null });
 const scene = (checks: SceneCheck[], findings: SceneFinding[]): Scene => ({ checks, findings } as Scene);
 
 test("with nothing wrong there are no problems, and the tool's own checks are not shown", () => {
@@ -25,6 +25,24 @@ test("problems are read by question, in the order the checks ran, whatever order
   assert.deepEqual(standings(held).map((each) => [each.group, each.problems]), [["fabrication", 2], ["function", 1], ["variation", 1], ["integrity", 1]]);
   assert.equal(headline(5), "5 problems");
   assert.equal(headline(1), "1 problem");
+});
+
+test("a check made against two processes is two checks, each with its own findings", () => {
+  const [flowjem, cosinc] = ["flowjem-su8-pdms", "cosinc-su8-pdms"];
+  const rules = [check("rules", "fabrication", "violated", null, flowjem), check("rules", "fabrication", "satisfied", null, cosinc)];
+  const narrow = [1, 2, 3].map((at) => finding("rules", "fabrication", `narrow ${at}`, null, flowjem));
+  const held = scene([...rules, check("graph", "function")], narrow);
+  // Each finding is listed once, under the process it was found at.
+  assert.deepEqual(problems(held).map((each) => [each.message, each.check.process]), [["narrow 1", flowjem], ["narrow 2", flowjem], ["narrow 3", flowjem]]);
+  assert.deepEqual(rules.map(keyOf), ["rules@flowjem-su8-pdms", "rules@cosinc-su8-pdms"]);
+  assert.equal(keyOf(check("graph", "function")), "graph");
+  assert.equal(named(rules[0]!), "rules at flowjem-su8-pdms");
+  assert.equal(named(check("graph", "function")), "graph");
+  // Folding is by check and process: opening one leaves the other as it was.
+  const folded = listed(problems(held), 2, new Set());
+  assert.deepEqual([folded.shown.length, folded.folded.map((each) => [keyOf(each.check), each.more])], [2, [["rules@flowjem-su8-pdms", 1]]]);
+  assert.equal(listed(problems(held), 2, new Set(["rules@cosinc-su8-pdms"])).shown.length, 2);
+  assert.equal(listed(problems(held), 2, new Set(["rules@flowjem-su8-pdms"])).shown.length, 3);
 });
 
 test("a check that did not run is one problem, and a waived finding is none", () => {

@@ -156,7 +156,7 @@ impl Session<'_> {
         let mut project = Project::beside(&self.file, &build)?;
         project.overrides.0.extend(self.trial.0.clone());
         let verified = project.verify()?;
-        let mut scene = scene(&verified, project.process.as_ref());
+        let mut scene = scene(&verified);
         for origin in scene.origins.values_mut() {
             locate(origin);
         }

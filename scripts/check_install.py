@@ -13,7 +13,8 @@ from pathlib import Path
 
 
 def main() -> None:
-    manifest = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    repository = Path(__file__).resolve().parents[1]
+    manifest = repository / "pyproject.toml"
     expected = tomllib.loads(manifest.read_text(encoding="utf-8"))["project"]["version"]
     installed = distribution("microfluidics")
     assert installed.version == expected, (installed.version, expected)
@@ -26,16 +27,18 @@ def main() -> None:
     cli = Path(sysconfig.get_path("scripts")) / executable
     module = [sys.executable, "-I", "-X", "utf8", "-m", "microfluidics"]
     with tempfile.TemporaryDirectory() as workdir:
-        # Run the example a reader copies from the package description on PyPI.
-        description = installed.metadata["Description"]
-        example = description.split("```python\n", 1)[1].split("\n```", 1)[0]
+        # Run one of the repository's examples against the installed package alone, from a
+        # directory that holds nothing else.
+        example = (repository / "designs" / "test_channel.py").read_text(encoding="utf-8")
         Path(workdir, "test_channel.py").write_text(example, encoding="utf-8")
         solved = subprocess.check_output([*module, "solve", "test_channel.py", "--json"], cwd=workdir)
         checks = json.loads(solved)["checks"]
         assert any(check["id"] == "requirement/slow" and check["status"] == "satisfied" for check in checks)
         subprocess.run([*module, "export", "test_channel.py", "out"], cwd=workdir, check=True)
-        for artifact in ("REPORT.md", "masks/preview.svg"):
-            assert Path(workdir, "out", artifact).is_file(), artifact
+        # The report and the masks are written for each process the example names, in a folder
+        # of the process's name.
+        for artifact in ("REPORT.md", "preview.svg"):
+            assert any(Path(workdir, "out").rglob(artifact)), artifact
 
         guide = subprocess.check_output(
             [cli, "guide"],
@@ -45,7 +48,7 @@ def main() -> None:
         )
         assert guide.strip()
         result = subprocess.check_output(
-            [*module, "process", "conservative-su8-pdms"],
+            [*module, "process", "flowjem-su8-pdms"],
             cwd=workdir,
             encoding="utf-8",
         )

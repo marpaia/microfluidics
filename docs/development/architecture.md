@@ -9,12 +9,12 @@ How the repository is organised and how a design passes through it. Read this be
 | `python/microfluidics` | The Python package: `Region` and `Design`, quantities, the standard regions, the command line, the session's host, and the MCP server |
 | `crates/microfluidics-py` | The engine as a Python extension module (`microfluidics._engine`). Bindings only |
 | `crates/microfluidics-network` | Function: the flow graph, its solution, requirements, closure, corners and yield, verification, benchmarks, the scene and the session |
-| `crates/microfluidics-layout` | Geometry: the builder, the chip, the rule check, connectivity, routing, masks, the print model, GDSII and DXF, and wafers |
+| `crates/microfluidics-layout` | Geometry: the builder, the chip, processes and their fabs, the rule check, connectivity, routing, masks, the print model, GDSII and DXF, hand-off sheets, and wafers |
 | `crates/microfluidics-core` | Quantities, checks, hashes and the data types shared between crates |
 | `editors/vscode` | The VS Code extension |
-| `designs/` | Five designs, their tuned values, and a wafer |
+| `designs/` | Four designs, their tuned values, and a wafer |
 | `benchmarks/` | Tasks against which a design can be scored |
-| `processes/` | Fabrication processes |
+| `processes/` | Fabrication processes, one for each fab |
 | `tests/` | The Python tests and the captured results they compare against |
 
 Crate dependencies run one way: `core` ← `layout` ← `network` ← `py`.

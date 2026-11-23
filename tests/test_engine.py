@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import ClassVar
 
 import pytest
-from conftest import DESIGNS, ROOT, copied, design, difference, golden, project
+from conftest import DESIGNS, FIXTURES, ROOT, copied, design, difference, golden, project, source
 
 import microfluidics as mf
 from microfluidics.layers import FLOW, TRENCH
@@ -16,13 +16,19 @@ from microfluidics.regions import TrenchLane
 from microfluidics.results import Check, Report
 from microfluidics.units import mm, um
 
-MANIFOLD = (DESIGNS / "mother_machine_manifold.py").read_text()
+MANIFOLD = (FIXTURES / "mother_machine_manifold.py").read_text()
 
 
 def seen(checks: tuple[Check, ...]) -> list[dict[str, object]]:
     """Checks as the captures hold them."""
     return [
-        {"id": check.id, "status": check.status, "findings": len(check.findings), "metrics": check.metrics}
+        {
+            "id": check.id,
+            "process": check.process,
+            "status": check.status,
+            "findings": len(check.findings),
+            "metrics": check.metrics,
+        }
         for check in checks
     ]
 
@@ -45,21 +51,21 @@ def test_verify_gives_the_captured_results(named: tuple[str, type[mf.Design]], t
 @pytest.mark.parametrize("name", ["mother_machine_manifold", "goenner_mixer"])
 def test_closure_tunes_a_design_to_the_captured_values(name: str, tmp_path: Path) -> None:
     captured = golden(f"closure/{name}.json")
-    source = (DESIGNS / f"{name}.py").read_text()
-    (tmp_path / f"{name}.py").write_text(source)
+    written = source(name).read_text()
+    (tmp_path / f"{name}.py").write_text(written)
     closure = Project(tmp_path / f"{name}.py").close()
     assert closure.converged == captured["converged"]
     assert closure.tuned == captured["tuned_values"]
     # What was tuned is kept beside the design, and the design's source is as it was.
     assert (tmp_path / f"{name}.tuned.toml").read_text() == captured["tuned_values"]
-    assert (tmp_path / f"{name}.py").read_text() == source
+    assert (tmp_path / f"{name}.py").read_text() == written
 
 
-@pytest.mark.parametrize("name", ["balanced_lanes", "metering_mixer"])
+@pytest.mark.parametrize("name", ["metering_mixer"])
 def test_a_benchmark_scores_its_candidate_as_captured(name: str) -> None:
     captured = golden(f"benchmarks/{name}.json")
     held = benchmark(ROOT / "benchmarks" / name)
-    assert held.process == "conservative-su8-pdms" and "access_pad" in held.regions
+    assert held.process == "flowjem-su8-pdms" and "access_pad" in held.regions
     scored = score(ROOT / "benchmarks" / name, DESIGNS / f"{captured['candidate']}.py")
     assert (scored.requirements_met, scored.requirements) == (captured["met"], captured["of"])
     assert scored.report.passes == captured["passes"]
@@ -67,35 +73,55 @@ def test_a_benchmark_scores_its_candidate_as_captured(name: str) -> None:
 
 
 def test_a_benchmark_judges_a_candidate_by_its_own_conditions(tmp_path: Path) -> None:
-    # A candidate that weakens its own requirement is judged by the benchmark's all the same.
-    loose = (
-        (DESIGNS / "mother_machine_manifold.py")
-        .read_text()
-        .replace("mf.equal_within(5 * pct)", "mf.equal_within(90 * pct)")
-    )
+    # A candidate that asks nothing of itself is judged by the benchmark's requirements all the
+    # same: untuned, the mixer misses the shares the benchmark sets.
+    loose = (DESIGNS / "goenner_mixer.py").read_text().replace("within=1 * pct", "within=1000 * pct")
     (tmp_path / "loose.py").write_text(loose)
-    scored = score(ROOT / "benchmarks" / "balanced_lanes", tmp_path / "loose.py")
-    assert (scored.requirements_met, scored.requirements, scored.report.passes) == (2, 3, False)
+    assert Project(tmp_path / "loose.py").verify().passes
+    scored = score(ROOT / "benchmarks" / "metering_mixer", tmp_path / "loose.py")
+    assert scored.requirements == 3 and scored.requirements_met < 3 and not scored.report.passes
     # A candidate without what the benchmark speaks of is told what it lacks.
     with pytest.raises(mf.DesignError) as fault:
-        score(ROOT / "benchmarks" / "metering_mixer", tmp_path / "loose.py")
+        score(ROOT / "benchmarks" / "metering_mixer", DESIGNS / "test_channel.py")
     assert "buffer_in" in fault.value.args[0] and str(fault.value.args[1]).endswith("conditions.py")
 
 
-def test_an_export_writes_the_masks_the_report_and_the_design(tmp_path: Path) -> None:
+def test_an_export_writes_each_process_its_masks_its_report_and_its_sheet(tmp_path: Path) -> None:
     shutil.copy(DESIGNS / "test_channel.py", tmp_path / "test_channel.py")
     report: Report = Project(tmp_path / "test_channel.py").export(tmp_path / "out")
-    assert report.passes and report.check("dxf-readback") is not None
+    assert report.passes and report.processes == ("flowjem-su8-pdms", "cosinc-su8-pdms")
+    assert all(report.check("dxf-readback", process) is not None for process in report.processes)
     for file in [
-        "REPORT.md",
-        "report.json",
         "design.json",
-        "masks/chip.gds",
-        "masks/mask_1_trench.dxf",
-        "masks/README.md",
+        "report.json",
+        "flowjem-su8-pdms/REPORT.md",
+        "flowjem-su8-pdms/ORDER.md",
+        "flowjem-su8-pdms/masks/mask_1_flow.dxf",
+        "flowjem-su8-pdms/masks/README.md",
+        "cosinc-su8-pdms/REPORT.md",
+        "cosinc-su8-pdms/TRAVELER.md",
+        "cosinc-su8-pdms/masks/chip.gds",
     ]:
         assert (tmp_path / "out" / file).is_file(), file
-    assert set(report.files) >= {"REPORT.md", "masks/chip.gds"}
+        assert file in report.files, file
+    # Each process's report holds the checks that bear on it: the shared ones, and its own.
+    flowjem = (tmp_path / "out" / "flowjem-su8-pdms" / "REPORT.md").read_text()
+    assert "| `rules` at `flowjem-su8-pdms` | satisfied | 0 |" in flowjem and "cosinc" not in flowjem
+    assert "| `graph` | satisfied | 0 |" in flowjem
+    # The order names the drawing it sends by its hash, and what FlowJEM has not confirmed.
+    order = (tmp_path / "out" / "flowjem-su8-pdms" / "ORDER.md").read_text()
+    assert order.startswith("# Order: test_channel at FlowJEM\n")
+    assert "| `masks/mask_1_flow.dxf` | flow | `" in order and "chip.gds" not in order
+    assert "7 of 10 limits are assumed, not published by FlowJEM: layer.overlap" in order
+    assert "2 holes, each made with a 0.75 mm punch" in order and "| `feature.width` | 20.000 | published |" in order
+    # The traveler sets out each layer's steps, with room to write what was measured.
+    traveler = (tmp_path / "out" / "cosinc-su8-pdms" / "TRAVELER.md").read_text()
+    assert traveler.startswith("# Traveler: test_channel at COSINC\n")
+    assert (
+        "### 1. `flow`, 20.00 um" in traveler
+        and "| Coat | Spin the resist and speed that give this layer's height." in traveler
+    )
+    assert "| Height of `flow` | 20.00 | |" in traveler and "| Width of `monitor.line[0]` | 20.000 | |" in traveler
 
 
 def test_each_requirement_is_followed_across_the_corners_of_the_process(tmp_path: Path) -> None:
@@ -113,14 +139,18 @@ def test_each_requirement_is_followed_across_the_corners_of_the_process(tmp_path
         assert bound["low"] <= across["low"] <= drawn <= across["high"] <= bound["high"]
         assert across["reached"] in (across["low"], across["high"])
 
-    # The pilot's one requirement holds at every corner: the check carries the range it covers,
-    # in the requirement's own unit.
-    corners = Project(DESIGNS / "mother_machine_pilot.py").verify().check("corners")
+    # Each process has its own corners: the mixer's shares hold at FlowJEM's and at COSINC's.
+    assert [check.process for check in report.checks if check.id == "corners"] == list(report.processes)
+    assert len(report.processes) == 2
+
+    # The mother machine's requirement holds at every corner: the check carries the range it
+    # covers, in the requirement's own unit.
+    corners = Project(DESIGNS / "mother_machine.py").verify().check("corners")
     assert corners is not None and not corners.findings
-    assert corners.metrics["gentle.low"] < corners.metrics["gentle.high"] <= 1.0
+    assert corners.metrics["fresh.low"] < corners.metrics["fresh.high"] <= 1.0
 
     # The manifold as written is unbalanced at every corner, and its report says what is reached.
-    shutil.copy(DESIGNS / "mother_machine_manifold.py", tmp_path / "manifold.py")
+    shutil.copy(FIXTURES / "mother_machine_manifold.py", tmp_path / "manifold.py")
     project = Project(tmp_path / "manifold.py")
     report = project.verify()
     corners = report.check("corners")
@@ -133,9 +163,9 @@ def test_each_requirement_is_followed_across_the_corners_of_the_process(tmp_path
 
 
 def test_a_scene_holds_what_a_viewer_draws_with_python_lines_for_what_the_design_made(tmp_path: Path) -> None:
-    project = Project(DESIGNS / "mother_machine_manifold.py")
+    project = Project(FIXTURES / "mother_machine_manifold.py")
     scene = project.scene()
-    assert (scene["version"], scene["design"], scene["passes"]) == (4, "mother_machine_manifold", True)
+    assert (scene["version"], scene["design"], scene["passes"]) == (5, "mother_machine_manifold", True)
     assert scene["problems"] == 0
     assert (scene["glass_um"], scene["punch_um"]) == ([60000.0, 24000.0, 170.0], 750.0)
     assert len(scene["translates"]) == 22 and len(scene["flows"]) == 60 and len(scene["tunables"]) == 4
@@ -164,12 +194,15 @@ def test_a_scene_holds_what_a_viewer_draws_with_python_lines_for_what_the_design
     groups = {held["id"]: held["group"] for held in scene["checks"]}
     assert (groups["rules"], groups["graph"], groups["corners"]) == ("fabrication", "function", "variation")
     assert (groups["deterministic"], groups["gds-readback"]) == ("integrity", "integrity")
+    # A check made against a process names it; one that holds whatever makes the chip names none.
+    against = {held["id"]: held["process"] for held in scene["checks"]}
+    assert (against["rules"], against["corners"], against["graph"]) == ("cosinc-su8-pdms", "cosinc-su8-pdms", None)
     # With trial values over the tuned ones, nothing is written and the result changes.
-    before = (DESIGNS / "mother_machine_manifold.tuned.toml").read_text()
+    before = (FIXTURES / "mother_machine_manifold.tuned.toml").read_text()
     trial = project.scene(trial='"pitch" = "2600um"\n')
     assert trial["passes"] is False and trial["problems"] > 0 and trial["tunables"][0]["value"] == 2600.0
     assert any(finding["check"] == "requirement/balanced" for finding in trial["findings"])
-    assert (DESIGNS / "mother_machine_manifold.tuned.toml").read_text() == before
+    assert (FIXTURES / "mother_machine_manifold.tuned.toml").read_text() == before
 
 
 def held(report: Report, id: str) -> Check:
@@ -179,23 +212,31 @@ def held(report: Report, id: str) -> Check:
 
 
 def test_a_chip_that_breaks_a_rule_names_the_rule_and_the_feature_and_a_waiver_is_recorded(tmp_path: Path) -> None:
-    # Trenches packed 2.5 um apart leave 1.3 um walls: under the 2 um the process needs.
-    tuned = '"lane[2].trench_pitch" = "2.5um"\n'
-    rules = held(copied(tmp_path, "mother_machine_pilot", tuned).verify(), "rules")
-    assert rules.status == "violated"
+    # One lane's trenches packed 1.8 um apart leave 0.8 um walls: under the 1 um the process needs.
+    tuned = '"lane[1].trench_pitch" = "1.8um"\n'
+    rules = held(copied(tmp_path, "mother_machine", tuned).verify(), "rules")
+    assert rules.status == "violated" and rules.process == "cosinc-su8-pdms"
     spacing = next(finding for finding in rules.findings if finding.rule == "feature.space")
-    assert spacing.subject.startswith("lane[2].") and "1.300 um apart" in spacing.message, spacing
-    # 198 pairs of neighbours break the rule; twenty are listed and the rest counted.
-    assert rules.metrics["feature.space.violations"] == 198.0
+    assert spacing.subject.startswith("lane[1].") and "0.800 um apart" in spacing.message, spacing
+    # 2,664 pairs of neighbours break the rule; twenty are listed and the rest counted.
+    assert rules.metrics["feature.space.violations"] == 2664.0
+    # The check says which of its limits the fab has not published.
+    assert rules.note is not None and rules.note.startswith("10 of 10 limits are assumed, not published by COSINC")
 
     waiver = (
         f'[[waivers]]\nrule = "feature.space"\nsubject = "{spacing.subject}"\n'
         'reason = "Printed at this pitch before"\nby = "a researcher"\n'
     )
-    waived = held(copied(tmp_path, "mother_machine_pilot", tuned, waiver).verify(), "rules")
+    waived = held(copied(tmp_path, "mother_machine", tuned, waiver).verify(), "rules")
     same = next(finding for finding in waived.findings if finding.subject == spacing.subject)
     assert same.waived == "Printed at this pitch before (a researcher)"
     assert waived.status == "violated"
+    # A waiver that names a process accepts the finding there, and nowhere else.
+    for process, accepted in [("cosinc-su8-pdms", True), ("flowjem-su8-pdms", False)]:
+        elsewhere = waiver.replace("reason =", f'process = "{process}"\nreason =')
+        found = held(copied(tmp_path, "mother_machine", tuned, elsewhere).verify(), "rules")
+        same = next(finding for finding in found.findings if finding.subject == spacing.subject)
+        assert (same.waived is not None) is accepted, process
 
 
 class Still(mf.Design):
@@ -209,30 +250,35 @@ class Still(mf.Design):
         self.lane = TrenchLane().at(4 * mm, 2 * mm)
 
 
-def test_the_pilots_trenches_print_and_a_grating_drawn_too_fine_does_not(tmp_path: Path) -> None:
-    pilot = Project(DESIGNS / "mother_machine_pilot.py")
-    printed = held(pilot.verify(), "print")
+def test_the_mother_machines_trenches_print_and_a_grating_drawn_too_fine_does_not(tmp_path: Path) -> None:
+    machine = Project(DESIGNS / "mother_machine.py")
+    printed = held(machine.verify(), "print")
     assert printed.status == "satisfied", printed
-    # 1,600 trenches and the monitor's fifteen lines, the narrowest of them 1 um.
-    assert printed.metrics["trench.checked"] == 1615.0
+    # 7,998 trenches and the monitor's fifteen lines, the narrowest of them 1 um.
+    assert printed.metrics["trench.checked"] == 8013.0
     assert abs(printed.metrics["trench.narrowest_drawn_um"] - 1.0) < 1e-9
+    # The process's print model is not fitted to a tool, and the check says so.
+    assert printed.note is not None and "uncalibrated" in printed.note
 
     fine = '"monitor.trench_first" = "0.4um"\n"monitor.trench_step" = "0.1um"\n'
-    printed = held(copied(tmp_path, "mother_machine_pilot", fine).verify(), "print")
+    printed = held(copied(tmp_path, "mother_machine", fine).verify(), "print")
     assert printed.status == "violated"
     assert all(finding.subject.startswith("monitor.fine[") for finding in printed.findings), printed
     assert any("does not print at all" in finding.message for finding in printed.findings)
 
     # At a threshold of a half a 1 um line prints a hair narrow; a few nanometres restore it.
-    bias = {layer["layer"]: layer["bias_um"] for layer in pilot.bias()}
+    bias = {layer["layer"]: layer["bias_um"] for layer in machine.bias()}
+    assert {layer["process"] for layer in machine.bias()} == {"cosinc-su8-pdms"}
     assert 0.0 < bias["trench"] < 0.05 and abs(bias["flow"]) < 0.002, bias
+    # A process that states no print model is asked for no bias: FlowJEM's is not among them.
+    assert {layer["process"] for layer in Project(DESIGNS / "mixer.py").bias()} == {"cosinc-su8-pdms"}
 
 
 def test_a_wafer_holds_its_chips_named_and_refuses_one_that_does_not_fit(tmp_path: Path) -> None:
-    wafer = (DESIGNS / "pilot_wafer.toml").read_text()
-    (tmp_path / "pilot_wafer.toml").write_text(wafer)
+    wafer = (FIXTURES / "manifold_wafer.toml").read_text()
+    (tmp_path / "manifold_wafer.toml").write_text(wafer)
     (tmp_path / "mother_machine_manifold.py").write_text(MANIFOLD)
-    made = export_wafer(tmp_path / "pilot_wafer.toml", tmp_path / "out")
+    made = export_wafer(tmp_path / "manifold_wafer.toml", tmp_path / "out")
     labels = [chip["label"] for chip in made["chips"]]
     assert (len(labels), labels[0], labels[5]) == (6, "mother_machine_manifold-1", "mother_machine_manifold-6")
     assert made["alignment_marks"] == 2
@@ -247,30 +293,61 @@ def test_a_wafer_holds_its_chips_named_and_refuses_one_that_does_not_fit(tmp_pat
         export_wafer(tmp_path / "wide_wafer.toml", tmp_path / "wide")
     assert "mother_machine_manifold-1" in refused.value.args[0]
 
+    # A wafer of a design that names two processes must say which it is made in.
+    two = 'name = "mixers"\ndiameter_mm = 100.0\nedge_exclusion_mm = 5.0\nstreet_mm = 1.0\n'
+    two += '[[chips]]\ndesign = "mixer.py"\ncolumns = 2\nrows = 2\n'
+    shutil.copy(DESIGNS / "mixer.py", tmp_path / "mixer.py")
+    (tmp_path / "mixers.toml").write_text(two)
+    with pytest.raises(mf.DesignError) as unsaid:
+        export_wafer(tmp_path / "mixers.toml", tmp_path / "mixers")
+    assert "`mixer.py` names 2 processes; the wafer must say which" in unsaid.value.args[0]
+    (tmp_path / "mixers.toml").write_text(two.replace("diameter_mm", 'process = "flowjem-su8-pdms"\ndiameter_mm'))
+    assert len(export_wafer(tmp_path / "mixers.toml", tmp_path / "mixers")["chips"]) == 4
+    (tmp_path / "mixers.toml").write_text(two.replace("diameter_mm", 'process = "absent"\ndiameter_mm'))
+    with pytest.raises(mf.DesignError) as absent:
+        export_wafer(tmp_path / "mixers.toml", tmp_path / "mixers")
+    assert "the wafer is made in `absent`, which `mixer.py` does not name" in absent.value.args[0]
+
 
 def test_verify_lists_what_it_checked_and_stands_on_every_check(tmp_path: Path) -> None:
-    report = Project(DESIGNS / "mother_machine_pilot.py").verify()
-    assert [check.id for check in report.checks] == [
-        "deterministic",
+    # First what holds whatever makes the chip, then what is checked against each process.
+    report = Project(DESIGNS / "mother_machine.py").verify()
+    assert [(check.id, check.process) for check in report.checks] == [
+        ("deterministic", None),
+        ("connectivity", None),
+        ("graph", None),
+        ("requirement/fresh", None),
+        ("rules", "cosinc-su8-pdms"),
+        ("mask-rules", "cosinc-su8-pdms"),
+        ("gds-readback", "cosinc-su8-pdms"),
+        ("print", "cosinc-su8-pdms"),
+        ("corners", "cosinc-su8-pdms"),
+    ]
+    assert report.passes and report.problems == 0
+    assert "process cosinc-su8-pdms" in report.inputs and len(report.inputs["elaborated design"]) == 64
+    # A design that names two processes is checked against each in turn, FlowJEM's without a
+    # print check, since FlowJEM's process states no print model.
+    mixer = Project(DESIGNS / "mixer.py").verify()
+    assert [check.id for check in mixer.checks if check.process == "flowjem-su8-pdms"] == [
         "rules",
-        "connectivity",
+        "mask-rules",
+        "gds-readback",
+        "corners",
+    ]
+    assert [check.id for check in mixer.checks if check.process == "cosinc-su8-pdms"] == [
+        "rules",
         "mask-rules",
         "gds-readback",
         "print",
-        "graph",
-        "requirement/gentle",
         "corners",
     ]
-    assert report.passes and report.problems == 0
-    assert "process conservative-su8-pdms" in report.inputs and len(report.inputs["elaborated design"]) == 64
+    assert {"process flowjem-su8-pdms", "process cosinc-su8-pdms"} <= set(mixer.inputs)
     # Each source file read is named: the design's, and the standard regions' by their place in the package.
-    assert (
-        "microfluidics/regions/trench_lane.py" in report.inputs and "designs/mother_machine_pilot.py" in report.inputs
-    )
+    assert "microfluidics/regions/trench_lane.py" in report.inputs and "designs/mother_machine.py" in report.inputs
 
     # The manifold design as written is not balanced, and its report says so.
     report = copied(tmp_path, "mother_machine_manifold").export(tmp_path / "out")
-    written = (tmp_path / "out" / "REPORT.md").read_text()
+    written = (tmp_path / "out" / "cosinc-su8-pdms" / "REPORT.md").read_text()
     assert written.startswith("# Verification report: mother_machine_manifold\n\n**Does not pass: ")
     assert "| `requirement/balanced` | VIOLATED | 6 |" in written
     # Its problems are its findings that are not waived, counted over every check.
@@ -291,19 +368,19 @@ def test_closure_names_what_limits_a_requirement_beyond_reach_and_leaves_alone_w
 ) -> None:
     strict = MANIFOLD.replace("mf.equal_within(5 * pct)", "mf.equal_within(0.5 * pct)")
     assert strict != MANIFOLD
-    closure = copied(tmp_path, "mother_machine_manifold", source=strict).close()
+    closure = copied(tmp_path, "mother_machine_manifold", text=strict).close()
     assert not closure.converged and closure.limiting is not None
     assert closure.limiting.rule == "balanced"
     # Each tunable is accounted for: at the end of its range, or stopped by a rule it names.
     assert "pitch cannot help: it is at the bottom of its range" in closure.limiting.message, closure.limiting
     assert "(rule `roof.span`)" in closure.limiting.message, closure.limiting
 
-    nothing = copied(tmp_path, "mother_machine_pilot").close()
+    nothing = copied(tmp_path, "mother_machine").close()
     assert nothing.converged and not nothing.changes and nothing.tuned == ""
 
 
 def test_yield_is_found_when_a_design_asks_for_one(tmp_path: Path) -> None:
-    tuned = (DESIGNS / "mother_machine_manifold.tuned.toml").read_text()
+    tuned = (FIXTURES / "mother_machine_manifold.tuned.toml").read_text()
     asks = "        self.balanced = mf.Requirement("
     assert asks in MANIFOLD
 
@@ -311,12 +388,12 @@ def test_yield_is_found_when_a_design_asks_for_one(tmp_path: Path) -> None:
         robust = f'        self.robust = mf.Requirement("Most chips work", mf.chip_yield(), mf.at_least({least}))\n'
         return MANIFOLD.replace(asks, robust + asks)
 
-    report = copied(tmp_path, "mother_machine_manifold", tuned, source=asking("90 * pct")).verify()
+    report = copied(tmp_path, "mother_machine_manifold", tuned, text=asking("90 * pct")).verify()
     found = held(report, "yield")
     assert (found.status, found.metrics["chips"]) == ("satisfied", 500.0), found
     assert found.metrics["yield_percent"] >= 90.0 and report.passes
     # None can pass more often than every time.
-    report = copied(tmp_path, "mother_machine_manifold", tuned, source=asking("100.5 * pct")).verify()
+    report = copied(tmp_path, "mother_machine_manifold", tuned, text=asking("100.5 * pct")).verify()
     assert held(report, "yield").status == "violated" and not report.passes
 
 
@@ -395,3 +472,19 @@ def test_a_design_that_does_not_build_the_same_way_twice_does_not_pass(tmp_path:
     assert found.status == "violated"
     assert "built twice with the same values is not the same design" in found.findings[0].message
     assert not report.passes
+
+
+def test_a_design_that_names_a_process_alone_is_told_to_name_a_tuple(tmp_path: Path) -> None:
+    # Held to no process, a design would pass every rule without a word.
+    written = (DESIGNS / "test_channel.py").read_text()
+    for wrong in ["    process = COSINC_SU8_PDMS\n", "    processes = COSINC_SU8_PDMS\n"]:
+        alone = written.replace("    processes = (FLOWJEM_SU8_PDMS, COSINC_SU8_PDMS)\n", wrong)
+        assert alone != written
+        with pytest.raises(mf.DesignError) as fault:
+            copied(tmp_path, "test_channel", text=alone).verify()
+        assert "names its processes as a tuple" in fault.value.args[0]
+    # The same process named twice is a fault too.
+    twice = written.replace("(FLOWJEM_SU8_PDMS, COSINC_SU8_PDMS)", "(COSINC_SU8_PDMS, COSINC_SU8_PDMS)")
+    with pytest.raises(mf.DesignError) as fault:
+        copied(tmp_path, "test_channel", text=twice).verify()
+    assert "the process `cosinc-su8-pdms` is named twice" in fault.value.args[0]

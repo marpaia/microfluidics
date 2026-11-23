@@ -3,28 +3,6 @@
     "arguments": "",
     "fingerprint": {
       "access": [],
-      "translates": [
-        [
-          "it.tap_row",
-          8,
-          1
-        ]
-      ],
-      "joints": [],
-      "layers": [
-        [
-          "trench",
-          1100,
-          1
-        ],
-        [
-          "flow",
-          20000,
-          2
-        ]
-      ],
-      "name": "holder",
-      "operating": null,
       "edges": [
         [
           "it",
@@ -231,6 +209,27 @@
           ]
         ]
       ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
       "ports": [
         [
           20900000,
@@ -305,7 +304,7 @@
           "Both"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {},
       "rectangles": [
         [
@@ -390,15 +389,17 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
+      ],
+      "translates": [
+        [
+          "it.tap_row",
+          8,
+          1
+        ]
       ],
       "tunables": []
     }
@@ -407,28 +408,6 @@
     "arguments": "taps = 4, pitch = 1mm, trunk_width = 150um, tap_width = 60um, tap_length = 500um, stem_length = 1mm",
     "fingerprint": {
       "access": [],
-      "translates": [
-        [
-          "it.tap_row",
-          4,
-          1
-        ]
-      ],
-      "joints": [],
-      "layers": [
-        [
-          "trench",
-          1100,
-          1
-        ],
-        [
-          "flow",
-          20000,
-          2
-        ]
-      ],
-      "name": "holder",
-      "operating": null,
       "edges": [
         [
           "it",
@@ -539,6 +518,27 @@
           ]
         ]
       ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
       "ports": [
         [
           28500000,
@@ -581,7 +581,7 @@
           "Both"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {},
       "rectangles": [
         [
@@ -634,15 +634,17 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
+      ],
+      "translates": [
+        [
+          "it.tap_row",
+          4,
+          1
+        ]
       ],
       "tunables": []
     }
@@ -651,28 +653,6 @@
     "arguments": "taps = 16, pitch = 0.4mm",
     "fingerprint": {
       "access": [],
-      "translates": [
-        [
-          "it.tap_row",
-          16,
-          1
-        ]
-      ],
-      "joints": [],
-      "layers": [
-        [
-          "trench",
-          1100,
-          1
-        ],
-        [
-          "flow",
-          20000,
-          2
-        ]
-      ],
-      "name": "holder",
-      "operating": null,
       "edges": [
         [
           "it",
@@ -1071,6 +1051,27 @@
           ]
         ]
       ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
+      "joints": [],
+      "layers": [
+        [
+          "trench",
+          1100,
+          1
+        ],
+        [
+          "flow",
+          20000,
+          2
+        ]
+      ],
+      "name": "holder",
+      "operating": null,
       "ports": [
         [
           27000000,
@@ -1209,7 +1210,7 @@
           "Both"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {},
       "rectangles": [
         [
@@ -1358,15 +1359,17 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
+      ],
+      "translates": [
+        [
+          "it.tap_row",
+          16,
+          1
+        ]
       ],
       "tunables": []
     }

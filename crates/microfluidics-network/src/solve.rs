@@ -6,12 +6,16 @@
 use std::collections::BTreeMap;
 
 use microfluidics_core::model::{Drive, Measure, Operating};
-use microfluidics_core::{Check, Finding};
+use microfluidics_core::{Check, Finding, Waiver};
 
-use crate::duct::{WATER_DENSITY, reynolds, wall_shear};
+use crate::duct::{LAMINAR_LIMIT, WATER_DENSITY, dynamic_pressure, reynolds, wall_shear};
 use crate::error::NetworkError;
 use crate::graph::Graph;
 use crate::linalg::solve_dense;
+
+/// The share of the pressure that drives a chip which one edge may lose to inertia before the
+/// solution is not to be trusted.
+const INERTIAL_SHARE: f64 = 0.01;
 
 /// A solved graph.
 #[derive(Debug, Clone, PartialEq)]
@@ -224,9 +228,10 @@ impl Solution<'_> {
         Ok(self.pressure[self.vertex(from)?] - self.pressure[self.vertex(to)?])
     }
 
-    /// Whether the solution can be trusted: flow is conserved at every vertex, and slow enough
-    /// everywhere for the linear relation between pressure and flow to hold.
-    pub fn check(&self) -> Check {
+    /// Whether the solution can be trusted: flow is conserved at every vertex, laminar in every
+    /// edge, and loses little enough to inertia for pressure lost to viscosity alone to stand
+    /// for the whole.
+    pub fn check(&self, waivers: &[Waiver]) -> Check {
         let largest = self
             .flow
             .iter()
@@ -237,18 +242,27 @@ impl Solution<'_> {
             .filter(|vertex| !driven(*vertex))
             .map(|vertex| self.supplied(vertex).abs() / largest)
             .fold(0.0, f64::max);
+        let in_tightest = |edge: &crate::graph::Edge, flow: f64| {
+            let (width, height) = edge.narrowest;
+            (
+                reynolds(WATER_DENSITY, self.operating.viscosity, flow, width, height),
+                dynamic_pressure(WATER_DENSITY, flow, width, height),
+            )
+        };
         let fastest = (self.graph.edges.iter().zip(&self.flow))
+            .map(|(edge, flow)| (in_tightest(edge, *flow).0, edge.element.as_str()))
+            .max_by(|a, b| a.0.total_cmp(&b.0));
+        // The largest difference of pressure on the chip: what drives it.
+        let (low, high) = (self.pressure.iter()).fold((f64::INFINITY, f64::NEG_INFINITY), |(low, high), held| {
+            (low.min(*held), high.max(*held))
+        });
+        let span = (high - low).max(f64::MIN_POSITIVE);
+        // Each duct of an edge has an entrance, and where it meets the next a bend or a change
+        // of section: each loses about one dynamic pressure, which the model leaves out.
+        let most_inertial = (self.graph.edges.iter().zip(&self.flow))
             .map(|(edge, flow)| {
-                (
-                    reynolds(
-                        WATER_DENSITY,
-                        self.operating.viscosity,
-                        *flow,
-                        edge.narrowest.0,
-                        edge.narrowest.1,
-                    ),
-                    edge.element.as_str(),
-                )
+                let lost = edge.ducts.max(1) as f64 * in_tightest(edge, *flow).1;
+                (lost / span, edge.element.as_str())
             })
             .max_by(|a, b| a.0.total_cmp(&b.0));
         // A edge nothing flows through: it leads nowhere, or its ends are at one pressure.
@@ -272,17 +286,35 @@ impl Solution<'_> {
                 format!("flow is not conserved: a vertex gains or loses {residual:e} of the largest flow"),
             ));
         }
-        if let Some((number, element)) = fastest.filter(|(number, _)| *number > 1.0) {
+        if let Some((number, element)) = fastest.filter(|(number, _)| *number > LAMINAR_LIMIT) {
             let message = format!(
-                "the Reynolds number in {element} is {number:.2}; above 1 the flow is no longer in simple proportion to pressure"
+                "the Reynolds number in {element} is {number:.0}; above {LAMINAR_LIMIT:.0} flow in a duct may no longer be laminar"
             );
-            findings.push(finding("laminar", element, number, 1.0, message));
+            findings.push(finding("laminar", element, number, LAMINAR_LIMIT, message));
+        }
+        if let Some((share, element)) = most_inertial.filter(|(share, _)| *share > INERTIAL_SHARE) {
+            let message = format!(
+                "inertia in {element} loses about {:.1}% of the pressure that drives the chip, which the model leaves out; it allows {:.0}%",
+                share * 100.0,
+                INERTIAL_SHARE * 100.0
+            );
+            findings.push(finding(
+                "inertia",
+                element,
+                share * 100.0,
+                INERTIAL_SHARE * 100.0,
+                message,
+            ));
         }
         let metrics = [
             ("vertices", self.pressure.len() as f64),
             ("edges", self.flow.len() as f64),
             ("conservation_residual", residual),
             ("max_reynolds", fastest.map_or(0.0, |(number, _)| number)),
+            (
+                "inertial_loss_percent",
+                most_inertial.map_or(0.0, |(share, _)| share * 100.0),
+            ),
             ("edges_without_flow", still as f64),
         ];
         Check::from_findings(
@@ -292,7 +324,7 @@ impl Solution<'_> {
                 .into_iter()
                 .map(|(name, value)| (name.to_owned(), value))
                 .collect(),
-            &[],
+            waivers,
         )
     }
 }

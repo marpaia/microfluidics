@@ -1,0 +1,92 @@
+# FlowJEM (Toronto): an SU-8 master on silicon, PDMS cast from it and bonded to glass, ordered by
+# email with a price request form. The limits FlowJEM publishes are on its ordering page; every
+# other limit here is a cautious assumption, named under `[fab]`, until FlowJEM confirms it.
+name = "flowjem-su8-pdms"
+description = "FlowJEM mail order: SU-8 master on silicon, PDMS cast and bonded to glass."
+
+# "Minimum feature/gap size: >= ~5 um."
+[[rules]]
+name = "feature.width"
+kind = "width"
+min_um = 5.0
+
+[[rules]]
+name = "feature.space"
+kind = "space"
+min_um = 5.0
+
+# How far one mask layer may sit from another after alignment. FlowJEM states no figure; this is
+# the alignment tolerance another foundry publishes for printed film masks.
+[[rules]]
+name = "layer.overlap"
+kind = "overlap"
+min_um = 30.0
+
+# The tallest feature, or wall between features, relative to its width that the resist holds.
+[[rules]]
+name = "resist.aspect"
+kind = "aspect"
+max = 2.0
+
+# The widest unsupported PDMS roof relative to its height before it sags onto the glass. A
+# punched hole removes the roof it passes through; FlowJEM punches at 0.75 mm or 0.90 mm.
+[[rules]]
+name = "roof.span"
+kind = "roof_span"
+max = 12.0
+punch_um = 750.0
+
+# How close two ports, and a port and the chip's edge, may be.
+[[rules]]
+name = "port.pitch"
+kind = "port_pitch"
+min_um = 2500.0
+
+[[rules]]
+name = "port.edge"
+kind = "edge_margin"
+min_um = 2000.0
+
+# The glass the chip is bonded to.
+[[rules]]
+name = "chip.size"
+kind = "extent"
+max_mm = [50.0, 24.0]
+
+# "The height ranges from a few to 500 um."
+[[rules]]
+name = "layer.height"
+kind = "layer_height"
+min_um = 2.0
+max_um = 500.0
+
+# FlowJEM offers multi-layer SU-8 and states no limit on the number of layers.
+[[rules]]
+name = "layer.count"
+kind = "layer_count"
+max = 2
+
+# How far a made chip may be from its drawing, each as one standard deviation. FlowJEM states a
+# feature height within about 15 % of the channel height, taken here as three standard
+# deviations. It states nothing of widths.
+[tolerances]
+width_sigma_um = 0.3
+width_bias_sigma_um = 0.5
+height_sigma_fraction = 0.05
+
+[fab]
+name = "FlowJEM"
+handoff = "order"
+drawing = "dxf"
+source = "https://www.flowjem.com/placing-an-order.html"
+read = "2026-11-23"
+polarity = "Right reading, emulsion side down. Channels are transparent on the mask."
+assumed = ["layer.overlap", "resist.aspect", "roof.span", "port.pitch", "port.edge", "chip.size", "layer.count"]
+questions = [
+    "How far may one layer sit from another after alignment?",
+    "How narrow may a wall or a feature be relative to its height?",
+    "Which glass do you bond to, in what sizes and thicknesses?",
+    "How close may punched holes be to each other and to the chip's edge?",
+    "How far do feature widths vary from the drawing?",
+    "What are the price and the lead time for this order?",
+]

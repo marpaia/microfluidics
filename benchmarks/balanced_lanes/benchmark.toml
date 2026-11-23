@@ -1,3 +1,0 @@
-name = "balanced-lanes"
-process = "conservative-su8-pdms"
-regions = ["access_pad", "manifold", "trench_lane", "alignment_mark", "process_monitor"]

@@ -198,14 +198,16 @@ def close(arguments: Mapping[str, str]) -> Result:
     return _result(closure.converged, said, closure=dataclasses.asdict(closure))
 
 
-def _one(project: Project, found: Check) -> Result:
+def _each(project: Project, found: Sequence[Check]) -> Result:
+    """One check for each process, with what each measured."""
     name = project.design.region_name()
-    return _result(found.passes, f"{name}:\n{text.checks([found])}{text.metrics(found)}", [found], design=name)
+    said = f"{name}:\n" + "".join(f"{text.checks([check])}{text.metrics(check)}" for check in found)
+    return _result(all(check.passes for check in found), said, found, design=name)
 
 
 def corners(arguments: Mapping[str, str]) -> Result:
     project = Project(arguments["design"])
-    return _one(project, project.corners())
+    return _each(project, project.corners())
 
 
 def _whole(arguments: Mapping[str, str], name: str, otherwise: int) -> int:
@@ -219,7 +221,7 @@ def _whole(arguments: Mapping[str, str], name: str, otherwise: int) -> int:
 
 def chip_yield(arguments: Mapping[str, str]) -> Result:
     project = Project(arguments["design"])
-    return _one(project, project.chip_yield(_whole(arguments, "chips", 500), _whole(arguments, "seed", 1)))
+    return _each(project, project.chip_yield(_whole(arguments, "chips", 500), _whole(arguments, "seed", 1)))
 
 
 def bias(arguments: Mapping[str, str]) -> Result:
@@ -227,13 +229,16 @@ def bias(arguments: Mapping[str, str]) -> Result:
     layers = project.bias()
     name = project.design.region_name()
     said = f"{name}: the bias at which each layer's narrowest feature prints as drawn\n"
+    named = None
     for layer in layers:
+        if layer["process"] != named:
+            named = layer["process"]
+            said += f"  at {named}\n"
         if layer["bias_um"] is None:
-            said += f"  {layer['layer']:<12} no bias makes its narrowest feature print\n"
+            said += f"    {layer['layer']:<12} no bias makes its narrowest feature print\n"
         else:
-            said += (
-                f"  {layer['layer']:<12} {layer['bias_um']:+.3f} um (the process states {layer['stated_um']:+.3f} um)\n"
-            )
+            stated = f"the process states {layer['stated_um']:+.3f} um"
+            said += f"    {layer['layer']:<12} {layer['bias_um']:+.3f} um ({stated})\n"
     return _result(all(layer["bias_um"] is not None for layer in layers), said, design=name, layers=layers)
 
 
@@ -258,7 +263,7 @@ def export(arguments: Mapping[str, str]) -> Result:
 
 def wafer(arguments: Mapping[str, str]) -> Result:
     held = export_wafer(arguments["wafer"], arguments["directory"])
-    said = f"{len(held['chips'])} chips on the wafer, and {held['alignment_marks']} crosses to align it by\n"
+    said = f"{len(held['chips'])} chips on the wafer, and {held['alignment_marks']} marks to align it by\n"
     said += "".join(f"  {chip['label']:<34} at ({chip['x_mm']:.2f}, {chip['y_mm']:.2f}) mm\n" for chip in held["chips"])
     for design, passes in held["passes"].items():
         said += f"  {design} {'passes' if passes else 'does NOT pass'}\n"
@@ -321,10 +326,12 @@ COMMANDS: tuple[Command, ...] = (
     Command(
         "close", "Tune what a design allows until its requirements hold; writes <design>.tuned.toml", (DESIGN,), close
     ),
-    Command("corners", "Whether a design's requirements hold at every corner of its process", (DESIGN,), corners),
+    Command(
+        "corners", "Whether a design's requirements hold at every corner of each of its processes", (DESIGN,), corners
+    ),
     Command(
         "yield",
-        "The share of chips, made within the process's tolerances, that meet every requirement",
+        "The share of chips, made within each process's tolerances, that meet every requirement",
         (
             DESIGN,
             Argument("chips", "How many chips to draw; 500 when not given", required=False),
@@ -332,7 +339,12 @@ COMMANDS: tuple[Command, ...] = (
         ),
         chip_yield,
     ),
-    Command("bias", "The mask bias at which each layer's narrowest feature prints at its drawn width", (DESIGN,), bias),
+    Command(
+        "bias",
+        "For each process, the mask bias at which each layer's narrowest feature prints at its drawn width",
+        (DESIGN,),
+        bias,
+    ),
     Command(
         "export",
         "Verify a design and write its masks, report and elaborated design",

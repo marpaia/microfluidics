@@ -10,7 +10,7 @@ use serde::Serialize;
 
 use microfluidics_core::model::{Bound, Drive, Requirement};
 use microfluidics_core::{Check, Finding, Status};
-use microfluidics_layout::{Origin, Point, Process, RuleKind, Tunable};
+use microfluidics_layout::{Origin, Point, Tunable};
 
 use crate::duct::{WATER_DENSITY, reynolds, wall_shear};
 use crate::graph::extract;
@@ -19,7 +19,7 @@ use crate::verify::{Group, Verified, group, title};
 
 /// The version of the scene's format: raised when a viewer written for the last one would
 /// misread this one.
-pub const VERSION: u32 = 4;
+pub const VERSION: u32 = 5;
 
 const UM: f64 = 1e6;
 
@@ -168,12 +168,16 @@ pub struct SceneCheck {
     pub status: Status,
     pub note: Option<String>,
     pub metrics: BTreeMap<String, f64>,
+    /// The process the check was made against, when it depends on one.
+    pub process: Option<String>,
 }
 
 /// One finding, with the things it is about and where the first of them was made.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SceneFinding {
     pub check: String,
+    /// The process its check was made against, when it depends on one.
+    pub process: Option<String>,
     /// The question its check answers.
     pub group: Group,
     pub rule: String,
@@ -196,7 +200,8 @@ pub struct Scene {
     pub thickness_um: f64,
     /// The width, depth and thickness of the glass the slab is bonded to, at the glass's middle.
     pub glass_um: [f64; 3],
-    /// The diameter of the hole punched at each access point, when the process states it.
+    /// The diameter of the hole punched at each access point, when the first process the design
+    /// names states it.
     pub punch_um: Option<f64>,
     pub layers: Vec<SceneLayer>,
     /// Repeated outlines, stated once: each a list of rectangles about its own origin.
@@ -289,6 +294,7 @@ fn listed(check: &Check) -> SceneCheck {
         status: check.status,
         note: check.note.clone(),
         metrics: check.metrics.clone(),
+        process: check.process.clone(),
     }
 }
 
@@ -340,7 +346,10 @@ fn about(path: &str, boxes: &[(String, [f64; 4])]) -> Option<[f64; 4]> {
 }
 
 /// The scene of a verified design, made in `process`.
-pub fn scene(verified: &Verified, process: Option<&Process>) -> Scene {
+pub fn scene(verified: &Verified) -> Scene {
+    // What varies with the process is shown as the first the design names has it.
+    let first = verified.made.first();
+    let process = first.and_then(|made| made.process.as_ref());
     let elaborated = &verified.analysis.elaborated;
     let (chip, layout) = (&elaborated.chip, &elaborated.chip.layout);
     let shape = |rectangle: &microfluidics_layout::Rectangle| {
@@ -490,15 +499,17 @@ pub fn scene(verified: &Verified, process: Option<&Process>) -> Scene {
             bound: allowed(&requirement.bound, &values, per_si),
             values,
             unit: unit.to_owned(),
-            across: verified.across.get(&requirement.name).map(|across| SceneAcross {
-                low: across.low * per_si,
-                low_corner: across.low_corner.clone(),
-                high: across.high * per_si,
-                high_corner: across.high_corner.clone(),
-                reached: across.reached * per_si,
-                corner: across.corner.clone(),
-                holds: across.distance <= 1.0 + 1e-9,
-            }),
+            across: first
+                .and_then(|made| made.across.get(&requirement.name))
+                .map(|across| SceneAcross {
+                    low: across.low * per_si,
+                    low_corner: across.low_corner.clone(),
+                    high: across.high * per_si,
+                    high_corner: across.high_corner.clone(),
+                    reached: across.reached * per_si,
+                    corner: across.corner.clone(),
+                    holds: across.distance <= 1.0 + 1e-9,
+                }),
             note: check.and_then(|check| check.note.clone()),
         }
     };
@@ -509,6 +520,7 @@ pub fn scene(verified: &Verified, process: Option<&Process>) -> Scene {
             let origin = paths.first().and_then(|path| elaborated.origins.get(path)).cloned();
             findings.push(SceneFinding {
                 check: check.id.clone(),
+                process: check.process.clone(),
                 group: group(&check.id),
                 rule: finding.rule.clone(),
                 message: finding.message.clone(),
@@ -526,12 +538,7 @@ pub fn scene(verified: &Verified, process: Option<&Process>) -> Scene {
         size_um: [microns(chip.size[0]), microns(chip.size[1])],
         thickness_um: microns(chip.size[2]),
         glass_um: chip.glass.map(microns),
-        punch_um: (process.iter())
-            .flat_map(|process| &process.rules)
-            .find_map(|rule| match rule.kind {
-                RuleKind::RoofSpan { punch, .. } if punch > 0.0 => Some(microns(punch)),
-                _ => None,
-            }),
+        punch_um: process.and_then(|process| process.punch()).map(microns),
         layers,
         outlines: layout
             .structures

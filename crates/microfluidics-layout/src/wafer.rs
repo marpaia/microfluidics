@@ -19,6 +19,25 @@ const TICK: (f64, f64) = (400e-6, 50e-6);
 const CROSS: (f64, f64) = (1e-3, 50e-6);
 const STAND_OFF: f64 = 100e-6;
 
+/// A cross about `centre` as three rectangles named `name`: its upright, and the arm to either
+/// side. `margin` is how much wider and longer it is than the wafer's cross on every side.
+fn mark(name: &str, layer: &str, centre: Point, margin: f64) -> Vec<Rectangle> {
+    let (half, thin) = (CROSS.0 / 2.0 + margin, CROSS.1 / 2.0 + margin);
+    let arm = |part: &str, min: [f64; 2], max: [f64; 2]| {
+        Rectangle::rect(
+            &format!("{name}_{part}"),
+            layer,
+            Point::new(centre.x + min[0], centre.y + min[1]),
+            Point::new(centre.x + max[0], centre.y + max[1]),
+        )
+    };
+    vec![
+        arm("upright", [-thin, -half], [thin, half]),
+        arm("left", [-half, -thin], [-thin, thin]),
+        arm("right", [thin, -thin], [half, thin]),
+    ]
+}
+
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum WaferError {
     #[error("{file}: {message}")]
@@ -46,6 +65,9 @@ pub struct Block {
 #[derive(Debug, Clone, PartialEq)]
 pub struct WaferSpec {
     pub name: String,
+    /// The process the wafer is made in, among those its designs name; needed when they name
+    /// more than one.
+    pub process: Option<String>,
     pub diameter: f64,
     /// How far from the wafer's edge nothing is drawn.
     pub edge_exclusion: f64,
@@ -59,6 +81,7 @@ pub struct WaferSpec {
 #[serde(deny_unknown_fields)]
 struct Written {
     name: String,
+    process: Option<String>,
     diameter_mm: f64,
     edge_exclusion_mm: f64,
     street_mm: f64,
@@ -96,6 +119,7 @@ impl WaferSpec {
         };
         Ok(Self {
             name: written.name,
+            process: written.process,
             diameter: written.diameter_mm * 1e-3,
             edge_exclusion: written.edge_exclusion_mm * 1e-3,
             street: written.street_mm * 1e-3,
@@ -119,7 +143,7 @@ pub struct Placed {
 pub struct Wafer {
     pub masks: MaskSet,
     pub placements: Vec<Placed>,
-    /// How many crosses for aligning the wafer were drawn: those that do not lie on a chip.
+    /// How many marks for aligning the wafer were drawn: those that do not lie on a chip.
     pub alignment_marks: usize,
 }
 
@@ -149,7 +173,8 @@ fn layers(chips: &[(&str, &MaskSet)]) -> Result<LayerStack, WaferError> {
 
 /// Step every chip of `spec` across its wafer. `chips` holds the prepared masks of each design
 /// the wafer names. Chips are named beneath in the deepest layer, with ticks at their corners to
-/// dice by; two crosses on the shallowest layer, either side of the wafer, align it.
+/// dice by. Two marks, either side of the wafer, align it: a cross on the shallowest layer and
+/// a window over it on every other.
 pub fn assemble(spec: &WaferSpec, chips: &BTreeMap<String, MaskSet>) -> Result<Wafer, WaferError> {
     let mut blocks: Vec<(&Block, &MaskSet)> = Vec::new();
     for block in &spec.blocks {
@@ -320,13 +345,14 @@ pub fn assemble(spec: &WaferSpec, chips: &BTreeMap<String, MaskSet>) -> Result<W
         mask.rectangles.extend(drawn);
     }
 
-    // A cross either side of the wafer on its horizontal centre line, where no chip lies.
+    // A mark either side of the wafer on its horizontal centre line, where no chip lies: a
+    // cross on the shallowest layer, which is exposed first, and on every other layer a window
+    // of the same shape through which the cross is seen.
     let mut alignment_marks = 0;
     for (side, x) in [
         ("west", spec.edge_exclusion + CROSS.0),
         ("east", spec.diameter - spec.edge_exclusion - CROSS.0),
     ] {
-        let (half, thin) = (CROSS.0 / 2.0, CROSS.1 / 2.0);
         let clear = outlines.iter().all(|outline| {
             x + CROSS.0 < outline.min.x
                 || x - CROSS.0 > outline.max.x
@@ -337,25 +363,13 @@ pub fn assemble(spec: &WaferSpec, chips: &BTreeMap<String, MaskSet>) -> Result<W
             continue;
         }
         alignment_marks += 1;
-        if let Some(mask) = masks.iter_mut().find(|mask| mask.layer.name == shallowest.name) {
-            let arm = |name: &str, min: Point, max: Point| {
-                Rectangle::rect(&format!("wafer.{side}.{name}"), &shallowest.name, min, max)
-            };
-            mask.rectangles.push(arm(
-                "upright",
-                Point::new(x - thin, centre - half),
-                Point::new(x + thin, centre + half),
-            ));
-            mask.rectangles.push(arm(
-                "left",
-                Point::new(x - half, centre - thin),
-                Point::new(x - thin, centre + thin),
-            ));
-            mask.rectangles.push(arm(
-                "right",
-                Point::new(x + thin, centre - thin),
-                Point::new(x + half, centre + thin),
-            ));
+        for mask in &mut masks {
+            let first = mask.layer.name == shallowest.name;
+            // A window is wider than the cross by the cross's own width on every side.
+            let margin = if first { 0.0 } else { CROSS.1 };
+            let name = format!("wafer.{side}.{}", if first { "cross" } else { "window" });
+            mask.rectangles
+                .extend(mark(&name, &mask.layer.name, Point::new(x, centre), margin));
         }
     }
     let masks = MaskSet {

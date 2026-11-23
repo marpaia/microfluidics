@@ -2,7 +2,7 @@
 
 import microfluidics as mf
 from microfluidics.layers import FLOW, TRENCH
-from microfluidics.processes import CONSERVATIVE_SU8_PDMS
+from microfluidics.processes import COSINC_SU8_PDMS
 from microfluidics.regions import AccessPad, AlignmentMark, Manifold, ProcessMonitor, TrenchLane
 from microfluidics.units import Length, Pa, mbar, mm, mPa_s, pct, um
 
@@ -11,7 +11,7 @@ class MotherMachineManifold(mf.Design):
     """A two-layer mother-machine chip fed from one inlet: a manifold spreads the flow over eight
     lanes of growth trenches, and a second gathers it to one outlet."""
 
-    process = CONSERVATIVE_SU8_PDMS
+    processes = (COSINC_SU8_PDMS,)
     slab = mf.Slab(24.2 * mm, 21 * mm, thickness=4 * mm)
     glass = mf.Glass(60 * mm, 24 * mm, thickness=0.17 * mm)
     layers = mf.Stack({TRENCH: mf.LayerSpec(height=1.1 * um, gds=1), FLOW: mf.LayerSpec(height=20 * um, gds=2)})

@@ -13,6 +13,14 @@ from microfluidics.project import Project
 
 ROOT = Path(__file__).resolve().parent.parent
 DESIGNS = ROOT / "designs"
+FIXTURES = ROOT / "tests" / "designs"
+"""Designs kept for the tests alone: what the examples do not exercise."""
+
+
+def source(name: str) -> Path:
+    """The file of the design `name`: an example, or else one kept for the tests."""
+    example = DESIGNS / f"{name}.py"
+    return example if example.is_file() else FIXTURES / f"{name}.py"
 
 
 def golden(name: str) -> Any:
@@ -43,8 +51,8 @@ def difference(now: Any, then: Any, at: str = "") -> str | None:
 
 
 def design(name: str) -> type[mf.Design]:
-    """The design in `designs/<name>.py`."""
-    spec = importlib.util.spec_from_file_location(name, DESIGNS / f"{name}.py")
+    """The design `name`, among the examples or those kept for the tests."""
+    spec = importlib.util.spec_from_file_location(name, source(name))
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
@@ -67,10 +75,10 @@ def project(directory: Path, design: type[mf.Design], tuned: str = "", waivers: 
     return held
 
 
-def copied(directory: Path, name: str, tuned: str = "", waivers: str = "", source: str | None = None) -> Project:
-    """The design `designs/<name>.py` as a project in `directory`, with nothing beside it but the
-    tuned values and the waivers given. `source` is its text, when that is not as it is written."""
-    (directory / f"{name}.py").write_text((DESIGNS / f"{name}.py").read_text() if source is None else source)
+def copied(directory: Path, name: str, tuned: str = "", waivers: str = "", text: str | None = None) -> Project:
+    """The design `name` as a project in `directory`, with nothing beside it but the tuned values
+    and the waivers given. `text` is its source, when that is not as it is written."""
+    (directory / f"{name}.py").write_text(source(name).read_text() if text is None else text)
     if tuned:
         (directory / f"{name}.tuned.toml").write_text(tuned)
     if waivers:
@@ -80,7 +88,7 @@ def copied(directory: Path, name: str, tuned: str = "", waivers: str = "", sourc
 
 @pytest.fixture(
     scope="session",
-    params=["mother_machine_pilot", "mother_machine_manifold", "goenner_mixer", "mixer", "test_channel"],
+    params=["mother_machine", "goenner_mixer", "mixer", "test_channel"],
 )
 def named(request: pytest.FixtureRequest) -> tuple[str, type[mf.Design]]:
     """Each design, with its name."""

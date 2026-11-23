@@ -4,12 +4,15 @@ use microfluidics_core::model::{DuctSpec, EdgeSpec, PortKind};
 
 use crate::builder::{BuildError, Builder, Origin, listed};
 use crate::geometry::{Direction, Point, TOLERANCE};
+use crate::plan::Fiducial;
 use crate::rectangle::{Port, Rectangle};
 use crate::route::route;
 use crate::structure::{Structure, Translates};
 
 /// The name of the vertex at a region's access point, within the region.
 pub(crate) const ACCESS: &str = "access";
+/// The name of a region's fiducial, within the region.
+pub(crate) const FIDUCIAL: &str = "fiducial";
 
 fn corners(name: &str, from: Point, to: Point, at: &Origin) -> Result<(Point, Point), BuildError> {
     // Drawn on the grid: a corner between two grid points would be written to a mask as one of
@@ -130,6 +133,16 @@ impl Builder {
     pub fn access(&mut self, position: Point, at: &Origin) -> Result<(), BuildError> {
         self.name(ACCESS, at)?;
         self.built.layout.access.push(position.snapped());
+        Ok(())
+    }
+
+    /// The centre of a mark this body draws for aligning one layer to another.
+    pub fn fiducial(&mut self, position: Point, at: &Origin) -> Result<(), BuildError> {
+        self.name(FIDUCIAL, at)?;
+        self.built.layout.fiducials.push(Fiducial {
+            name: FIDUCIAL.to_owned(),
+            position: position.snapped(),
+        });
         Ok(())
     }
 

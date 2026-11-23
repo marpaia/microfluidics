@@ -10,7 +10,7 @@ use microfluidics_layout::{
     Build, Elaborated, Features, MaskSet, Overrides, Process, check, gds_readback, gds_write, prepare, print_check,
 };
 
-use crate::analysis::{Analysis, AnalysisError, analyse};
+use crate::analysis::{Analysis, AnalysisError, analyse, each, waived_at};
 use crate::graph::extract;
 use crate::requirement::evaluate;
 use crate::tolerance::{Across, across, corners_of, yield_};
@@ -59,14 +59,24 @@ pub fn group(id: &str) -> Group {
     }
 }
 
-/// A report with the analysis and masks it was made from.
+/// A chip as one process makes it.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Made {
+    /// The process, when the design names one.
+    pub process: Option<Process>,
+    pub masks: MaskSet,
+    /// How each requirement fares across the corners of the process, when that was found.
+    pub across: BTreeMap<String, Across>,
+}
+
+/// A report with the analysis it was made from, and the chip as each process makes it.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Verified {
     pub report: Report,
     pub analysis: Analysis,
-    pub masks: MaskSet,
-    /// How each requirement fares across the corners of the process, when that was found.
-    pub across: BTreeMap<String, Across>,
+    /// One for each process the design names, in the order it names them; one with no process
+    /// when it names none.
+    pub made: Vec<Made>,
 }
 
 /// What a check is called where a person reads it.
@@ -111,37 +121,23 @@ fn deterministic(first: &Elaborated, second: &Elaborated) -> Check {
     Check::from_findings("deterministic", findings, BTreeMap::new(), &[])
 }
 
-/// Run every check on `design`: its rules as drawn, its connectivity, its masks' rules, the
-/// GDSII file read back, how its masks print, the network solved, each requirement, and the
-/// process's corners; and first, that it builds the same way twice.
+/// Run every check on `design`. First those that hold whatever makes the chip: that it builds
+/// the same way twice, its connectivity, the network solved, and each requirement. Then, against
+/// each of `processes`: its rules as drawn, its masks' rules, the GDSII file read back, how its
+/// masks print, and the process's corners.
 pub fn verify(
     build: Build<'_>,
     overrides: &Overrides,
-    process: Option<&Process>,
+    processes: &[Process],
     waivers: &[Waiver],
 ) -> Result<Verified, AnalysisError> {
-    let analysis = analyse(build, overrides, process, waivers)?;
+    let analysis = analyse(build, overrides, processes, waivers)?;
     let chip = &analysis.elaborated.chip;
     // A design is code, and code can read the clock or a random number. It is built a second
     // time, and must come out the same.
     let again = build(overrides)?;
     let mut checks = vec![deterministic(&analysis.elaborated, &again)];
-    checks.extend(analysis.checks.iter().cloned());
-
-    let masks = prepare(chip, process);
-    let mut on_masks = check(
-        &Features::prepared(&masks, chip),
-        process.map_or(&[][..], |process| &process.rules),
-        waivers,
-    );
-    on_masks.id = "mask-rules".to_owned();
-    checks.push(on_masks);
-    // The file holds the masks as written, which may be mirrored; it is compared with those.
-    let written = masks.as_written();
-    checks.push(gds_readback(&written, &gds_write(&written)));
-    if let Some(model) = process.and_then(|process| process.print) {
-        checks.push(print_check(&masks, &model));
-    }
+    checks.extend(analysis.checks.iter().filter(|check| check.id != "rules").cloned());
 
     // Requirements measured at places; yield, of the whole chip, is found with the tolerances.
     let requirements: Vec<&Requirement> = analysis
@@ -168,7 +164,7 @@ pub fn verify(
         }
         Some(operating) => match extract(chip, &analysis.nets, &Variation::nominal()).and_then(|network| {
             let solution = network.solve(operating)?;
-            let mut solved = vec![solution.check()];
+            let mut solved = vec![solution.check(&waived_at(waivers, None))];
             solved.extend(requirements.iter().map(|requirement| evaluate(requirement, &solution)));
             Ok(solved)
         }) {
@@ -180,27 +176,55 @@ pub fn verify(
         },
     }
 
-    // Across the chips the process makes, when it says how they vary.
-    let mut fared = BTreeMap::new();
-    if let Some(process) = process.filter(|process| process.tolerances.is_some() && !requirements.is_empty()) {
-        let found = across(&analysis, process);
-        checks.push(corners_of(&analysis, &found));
-        fared = found.unwrap_or_default();
-        // Yield is found when the design asks for one; the corners speak for every design.
-        if analysis
-            .elaborated
-            .requirements
-            .iter()
-            .any(|requirement| requirement.measure == Measure::Yield)
-        {
-            checks.push(yield_(&analysis, process, YIELD_CHIPS, YIELD_SEED));
+    let mut inputs: BTreeMap<String, String> = analysis.elaborated.sources.clone();
+    let mut made = Vec::new();
+    for process in each(processes) {
+        let name = process.map(|process| process.name.as_str());
+        let waivers = waived_at(waivers, name);
+        let as_drawn = |check: &&Check| check.id == "rules" && check.process.as_deref() == name;
+        let mut against: Vec<Check> = analysis.checks.iter().filter(as_drawn).cloned().collect();
+        let masks = prepare(chip, process);
+        let mut on_masks = check(
+            &Features::prepared(&masks, chip),
+            process.map_or(&[][..], |process| &process.rules),
+            &waivers,
+        );
+        on_masks.id = "mask-rules".to_owned();
+        on_masks.note = process.and_then(Process::caveat);
+        against.push(on_masks);
+        // The file holds the masks as written, which may be mirrored; it is compared with those.
+        let written = masks.as_written();
+        against.push(gds_readback(&written, &gds_write(&written)));
+        if let Some(model) = process.and_then(|process| process.print) {
+            against.push(print_check(&masks, &model));
         }
+        // Across the chips the process makes, when it says how they vary.
+        let mut fared = BTreeMap::new();
+        if let Some(process) = process.filter(|process| process.tolerances.is_some() && !requirements.is_empty()) {
+            let found = across(&analysis, process);
+            against.push(corners_of(&analysis, &found));
+            fared = found.unwrap_or_default();
+            // Yield is found when the design asks for one; the corners speak for every design.
+            if analysis
+                .elaborated
+                .requirements
+                .iter()
+                .any(|requirement| requirement.measure == Measure::Yield)
+            {
+                against.push(yield_(&analysis, process, YIELD_CHIPS, YIELD_SEED));
+            }
+        }
+        checks.extend(against.into_iter().map(|check| check.for_process(name)));
+        if let Some(process) = process {
+            inputs.insert(format!("process {}", process.name), process.sha256.clone());
+        }
+        made.push(Made {
+            process: process.cloned(),
+            masks,
+            across: fared,
+        });
     }
 
-    let mut inputs: BTreeMap<String, String> = analysis.elaborated.sources.clone();
-    if let Some(process) = process {
-        inputs.insert(format!("process {}", process.name), process.sha256.clone());
-    }
     if !overrides.0.is_empty() {
         inputs.insert(
             "tuned values".to_owned(),
@@ -211,12 +235,7 @@ pub fn verify(
         inputs.insert("elaborated design".to_owned(), hash.as_str().to_owned());
     }
     let report = Report::of(analysis.elaborated.name.clone(), inputs, checks);
-    Ok(Verified {
-        report,
-        analysis,
-        masks,
-        across: fared,
-    })
+    Ok(Verified { report, analysis, made })
 }
 
 impl Report {
@@ -244,6 +263,21 @@ impl Report {
             .sum();
     }
 
+    /// The report as it bears on the process `name`: the checks that hold whatever makes the
+    /// chip, and those made against that process.
+    pub fn for_process(&self, name: &str) -> Self {
+        let bearing = |check: &&Check| check.process.as_deref().is_none_or(|held| held == name);
+        let inputs = (self.inputs.iter())
+            .filter(|(input, _)| input.strip_prefix("process ").is_none_or(|held| held == name))
+            .map(|(input, hash)| (input.clone(), hash.clone()))
+            .collect();
+        Self::of(
+            self.design.clone(),
+            inputs,
+            self.checks.iter().filter(bearing).cloned().collect(),
+        )
+    }
+
     pub fn json(&self) -> String {
         serde_json::to_string_pretty(self).unwrap_or_else(|error| format!("{{\"error\": \"{error}\"}}"))
     }
@@ -265,16 +299,21 @@ impl Report {
             "# Verification report: {}\n\n**{verdict}**\n\n| Check | Result | Findings |\n| - | - | - |\n",
             self.design
         );
+        // A check made against a process is named with it.
+        let named = |check: &Check| match &check.process {
+            Some(process) => format!("`{}` at `{process}`", check.id),
+            None => format!("`{}`", check.id),
+        };
         for check in &self.checks {
             text.push_str(&format!(
-                "| `{}` | {} | {} |\n",
-                check.id,
+                "| {} | {} | {} |\n",
+                named(check),
                 word(check.status),
                 check.findings.len()
             ));
         }
         for check in &self.checks {
-            text.push_str(&format!("\n## `{}`: {}\n\n", check.id, word(check.status)));
+            text.push_str(&format!("\n## {}: {}\n\n", named(check), word(check.status)));
             if let Some(note) = &check.note {
                 text.push_str(&format!("{note}\n\n"));
             }

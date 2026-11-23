@@ -10,7 +10,7 @@ import { Icon, IconButton, Status } from "../ui/icon";
 import { List, Row } from "../ui/list";
 import { More, Pane } from "../ui/pane";
 import { useStore } from "../ui/store";
-import { GROUPS, type Problem, listed, problems, shortened, waived } from "../verification";
+import { GROUPS, type Problem, keyOf, listed, named, problems, shortened, waived } from "../verification";
 import { Said } from "./said";
 
 /** How many problems of one check are listed before the rest are folded away. */
@@ -52,7 +52,7 @@ export function ProblemRow({ problem, index, first }: { problem: Problem; index:
         <span class="message"><Said text={problem.message} /></span>
         <span class="where">
           <span>{NAMES[problem.group]}</span>
-          <span>{check.id.startsWith("requirement/") ? "Requirement" : check.title}</span>
+          <span>{check.id.startsWith("requirement/") ? "Requirement" : named(check)}</span>
           {path !== undefined ? <code title={path}>{shortened(path, 28)}</code> : <span>whole design</span>}
         </span>
       </span>
@@ -74,12 +74,12 @@ export function Problems(): JSX.Element | null {
       ) : (
         <List label="Problems">
           {shown.map((problem, at) => (
-            <ProblemRow key={`${problem.check.id}-${at}`} problem={problem} index={index} first={at === 0} />
+            <ProblemRow key={`${keyOf(problem.check)}-${at}`} problem={problem} index={index} first={at === 0} />
           ))}
         </List>
       )}
       {folded.map(({ check, more }) => (
-        <button class="link fold" onClick={() => unfold(check.id)}>Show {more} more of {check.id.startsWith("requirement/") ? "this requirement" : check.title.toLowerCase()}</button>
+        <button class="link fold" onClick={() => unfold(keyOf(check))}>Show {more} more of {check.id.startsWith("requirement/") ? "this requirement" : named(check).toLowerCase()}</button>
       ))}
       {accepted.length > 0 && (
         <More summary={<span>{accepted.length} accepted by waiver</span>}>
@@ -105,7 +105,7 @@ export function Problems(): JSX.Element | null {
                   {held.map((check) => (
                     <li class="verified-check" title={check.note ?? undefined}>
                       <Status status={check.status} />
-                      <span>{check.id.startsWith("requirement/") ? <Said text={check.title} /> : check.title}</span>
+                      <span>{check.id.startsWith("requirement/") ? <Said text={check.title} /> : named(check)}</span>
                     </li>
                   ))}
                 </ul>

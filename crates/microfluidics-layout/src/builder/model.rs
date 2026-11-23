@@ -83,7 +83,8 @@ impl Instance {
 pub struct Elaborated {
     pub name: String,
     pub chip: Chip,
-    pub process: Option<String>,
+    /// The processes the chip is made in, as the design names them.
+    pub processes: Vec<String>,
     /// What regions state about themselves, by path: `lane[0].observation_sites`.
     pub quantities: BTreeMap<String, f64>,
     /// How the chip is run, when the design says.

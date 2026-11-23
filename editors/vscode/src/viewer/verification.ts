@@ -20,6 +20,16 @@ export interface Problem {
   finding?: SceneFinding;
 }
 
+/** What tells one check from another: its id, and the process it was made against. */
+export function keyOf(check: { id: string; process: string | null }): string {
+  return check.process === null ? check.id : `${check.id}@${check.process}`;
+}
+
+/** What a check is called, with the process it was made against. */
+export function named(check: SceneCheck): string {
+  return check.process === null ? check.title : `${check.title} at ${check.process}`;
+}
+
 /** Every problem of a scene: by question, then by check, as the checks ran. */
 export function problems(scene: Scene): Problem[] {
   const found: Problem[] = [];
@@ -27,7 +37,7 @@ export function problems(scene: Scene): Problem[] {
     for (const check of scene.checks) {
       if (check.group !== group) continue;
       if (check.status === "not_run") found.push({ check, group, message: check.note ?? "It could not be verified." });
-      for (const finding of scene.findings) if (finding.check === check.id && !finding.waived) found.push({ check, group, message: finding.message, finding });
+      for (const finding of scene.findings) if (finding.check === check.id && finding.process === check.process && !finding.waived) found.push({ check, group, message: finding.message, finding });
     }
   }
   return found;
@@ -67,12 +77,13 @@ export function listed(all: Problem[], most: number, opened: Set<string>): { sho
   const [shown, folded]: [Problem[], { check: SceneCheck; more: number }[]] = [[], []];
   const seen = new Map<string, number>();
   for (const problem of all) {
-    const count = (seen.get(problem.check.id) ?? 0) + 1;
-    seen.set(problem.check.id, count);
-    if (count <= most || opened.has(problem.check.id)) shown.push(problem);
+    const key = keyOf(problem.check);
+    const count = (seen.get(key) ?? 0) + 1;
+    seen.set(key, count);
+    if (count <= most || opened.has(key)) shown.push(problem);
   }
-  for (const [id, count] of seen) {
-    if (count > most && !opened.has(id)) folded.push({ check: all.find((held) => held.check.id === id)!.check, more: count - most });
+  for (const [key, count] of seen) {
+    if (count > most && !opened.has(key)) folded.push({ check: all.find((held) => keyOf(held.check) === key)!.check, more: count - most });
   }
   return { shown, folded };
 }

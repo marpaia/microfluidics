@@ -7,10 +7,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from conftest import DESIGNS, ROOT
+from conftest import DESIGNS, FIXTURES, ROOT
 
 TEST_CHANNEL = (DESIGNS / "test_channel.py").read_text()
-MANIFOLD = (DESIGNS / "mother_machine_manifold.py").read_text()
+MANIFOLD = (FIXTURES / "mother_machine_manifold.py").read_text()
 
 
 def run(directory: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
@@ -45,8 +45,9 @@ def test_the_command_names_what_it_can_do_and_refuses_what_it_cannot(tmp_path: P
     # A region is described with how it is drawn: its source.
     assert "regions/manifold.py" in described and "class Manifold(mf.Region):" in described
     assert "there is no region `spiral`; the regions are AccessPad" in run(tmp_path, "describe", "spiral").stderr
-    assert "conservative-su8-pdms" in run(tmp_path, "process").stdout
-    assert 'kind = "edge_margin"' in run(tmp_path, "process", "conservative-su8-pdms").stdout
+    assert run(tmp_path, "process").stdout == "cosinc-su8-pdms\nflowjem-su8-pdms\n"
+    flowjem = run(tmp_path, "process", "flowjem-su8-pdms").stdout
+    assert 'kind = "edge_margin"' in flowjem and 'handoff = "order"' in flowjem
     assert "TrenchLane(channel_length, channel_width" in run(tmp_path, "regions").stdout
 
 
@@ -58,20 +59,28 @@ def test_a_design_is_checked_exported_and_its_faults_point_at_its_source(tmp_pat
     exported = run(tmp_path, "export", "channel.py", "out", "--json")
     result = json.loads(exported.stdout)
     assert exported.returncode == 0 and result["ok"] is True
-    ids = [check["id"] for check in result["checks"]]
-    expected = [
-        "deterministic",
-        "rules",
-        "connectivity",
-        "mask-rules",
-        "gds-readback",
-        "print",
-        "graph",
-        "requirement/slow",
-        "corners",
-    ]
-    assert ids == expected + ["dxf-readback"]
-    for file in ["REPORT.md", "report.json", "design.json", "masks/chip.gds", "masks/mask_1_trench.dxf"]:
+    ids = [(check["id"], check["process"]) for check in result["checks"]]
+    shared = ["deterministic", "connectivity", "graph", "requirement/slow"]
+    flowjem = ["rules", "mask-rules", "gds-readback", "corners"]
+    cosinc = ["rules", "mask-rules", "gds-readback", "print", "corners"]
+    assert ids == (
+        [(id, None) for id in shared]
+        + [(id, "flowjem-su8-pdms") for id in flowjem]
+        + [(id, "cosinc-su8-pdms") for id in cosinc]
+        + [("dxf-readback", "flowjem-su8-pdms"), ("dxf-readback", "cosinc-su8-pdms")]
+    )
+    # What is checked against a process is set out under its name.
+    assert "\n  at flowjem-su8-pdms\n    rules                        satisfied\n" in checked.stdout
+    assert "\n  at cosinc-su8-pdms\n    rules                        satisfied\n" in checked.stdout
+    for file in [
+        "report.json",
+        "design.json",
+        "flowjem-su8-pdms/REPORT.md",
+        "flowjem-su8-pdms/ORDER.md",
+        "flowjem-su8-pdms/masks/mask_1_flow.dxf",
+        "cosinc-su8-pdms/TRAVELER.md",
+        "cosinc-su8-pdms/masks/chip.gds",
+    ]:
         assert (tmp_path / "out" / file).is_file(), file
 
     # An inlet too near the chip's edge: violated, and the command says so by its exit.
@@ -79,7 +88,7 @@ def test_a_design_is_checked_exported_and_its_faults_point_at_its_source(tmp_pat
         TEST_CHANNEL.replace("AccessPad().at(4 * mm, 2.5 * mm)", "AccessPad().at(4 * mm, 1.2 * mm)")
     )
     near = run(tmp_path, "check", "near.py")
-    assert near.returncode == 1 and "rules                        VIOLATED" in near.stdout
+    assert near.returncode == 1 and near.stdout.count("\n    rules                        VIOLATED") == 2
     assert "the access point in inlet.pad is 1650 um from the chip's edge; the process needs 2000 um" in near.stdout
 
     # A fault in the design is reported as `file:line: message`, at the line that wrote it.
@@ -140,9 +149,10 @@ def test_closing_a_design_writes_what_was_tuned_beside_it(tmp_path: Path) -> Non
 
 
 def test_a_benchmark_gives_its_brief_and_scores_a_design() -> None:
-    brief = run(ROOT, "bench", "benchmarks/balanced_lanes").stdout
-    assert brief.startswith("# Balanced lanes") and "Regions a design may place: access_pad, manifold" in brief
-    scored = run(ROOT, "bench", "benchmarks/balanced_lanes", "designs/mother_machine_manifold.py")
+    brief = run(ROOT, "bench", "benchmarks/metering_mixer").stdout
+    assert brief.startswith("# Metering mixer") and "Regions a design may place: access_pad, serpentine" in brief
+    assert brief.rstrip().endswith("Process: flowjem-su8-pdms")
+    scored = run(ROOT, "bench", "benchmarks/metering_mixer", "designs/goenner_mixer.py")
     assert scored.returncode == 0 and "passes; 3 of 3 requirements hold" in scored.stdout, scored
 
 
@@ -174,7 +184,7 @@ def test_an_agent_writes_a_design_and_checks_it_through_the_server(tmp_path: Pat
     checked = answers[3]["result"]["structuredContent"]
     assert (
         checked["ok"] is True
-        and checked["checks"][0]["id"] == "rules"
+        and checked["checks"][0]["id"] == "connectivity"
         and checked["checks"][0]["status"] == "satisfied"
     )
     assert "a waiver is a person's to write" in answers[4]["result"]["content"][0]["text"]

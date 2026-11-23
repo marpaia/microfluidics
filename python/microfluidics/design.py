@@ -1,4 +1,4 @@
-"""Designs: a chip's slab, layers and process, what is on it, how it is run and what it must do."""
+"""Designs: a chip's slab, layers and processes, what is on it, how it is run and what it must do."""
 
 from __future__ import annotations
 
@@ -152,10 +152,11 @@ class Conditions:
 
 
 class Design(Region):
-    """A chip. Subclass it, state its `process`, `slab` and `layers` in the class body with any
+    """A chip. Subclass it, state its `processes`, `slab` and `layers` in the class body with any
     parameters of its own, and place what is on it in `build`."""
 
-    process: ClassVar[Process | None] = None
+    processes: ClassVar[tuple[Process, ...]] = ()
+    """The processes the chip is made in: it is held to the rules of every one."""
     slab: ClassVar[Slab]
     glass: ClassVar[Glass]
     layers: ClassVar[Stack]
@@ -222,8 +223,13 @@ class Design(Region):
         stated: Origin = (cls._source, cls._line)
         try:
             builder = Builder.design(cls.region_name(), overrides)
-            if cls.process is not None:
-                builder.process(cls.process.name, *stated)
+            # A tuple of processes: one written alone, or under the name `process`, would be held to
+            # no rule at all without a word.
+            if isinstance(cls.processes, Process) or "process" in vars(cls):
+                message = "a design names its processes as a tuple: `processes = (A,)` or `processes = (A, B)`"
+                raise DesignError(message, *stated)
+            for process in cls.processes:
+                builder.process(process.name, *stated)
             # A design that states no slab, or no glass, is told so by the engine.
             slab: Slab | None = getattr(cls, "slab", None)
             if slab is not None:

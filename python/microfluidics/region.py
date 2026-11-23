@@ -220,6 +220,10 @@ class Region:
         made._path = f"{self._prefix}access"
         return made
 
+    def fiducial(self, *, at: Point) -> None:
+        """The centre of a mark the region draws, by which one layer is aligned to another."""
+        self._body().fiducial(at, *caller())
+
     def stated(self, value: float) -> Stated:
         """A number the region states about itself."""
         return self._make(Stated(caller(), value))

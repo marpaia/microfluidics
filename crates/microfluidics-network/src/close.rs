@@ -1,7 +1,7 @@
 //! Closure: changing what a design allows to be changed until its requirements hold.
 //!
-//! Each trial is the whole design made again with other values: elaborated, checked against its
-//! rules and its own connections, its network extracted and solved. A trial that breaks a rule
+//! Each trial is the whole design made again with other values: elaborated, checked against the
+//! rules of every process it names and its own connections, its network extracted and solved. A trial that breaks a rule
 //! or cannot be made is never moved to. Source is not rewritten; the result is a set of
 //! overrides.
 
@@ -70,10 +70,10 @@ fn value_at(tunable: &Tunable, at: f64) -> Quantity {
 pub fn close(
     build: Build<'_>,
     start: &Overrides,
-    process: Option<&Process>,
+    processes: &[Process],
     waivers: &[Waiver],
 ) -> Result<Closure, AnalysisError> {
-    let first = analyse(build, start, process, waivers)?;
+    let first = analyse(build, start, processes, waivers)?;
     let tunables = first.elaborated.tunables.clone();
     let width = |tunable: &Tunable| (tunable.high.si - tunable.low.si).max(f64::MIN_POSITIVE);
     let begun: Vec<f64> = tunables
@@ -97,7 +97,7 @@ pub fn close(
     };
     // How far each requirement is from holding at `x`; `None` where the design cannot be made.
     let measure = |x: &[f64]| -> Option<BTreeMap<String, (Bound, f64)>> {
-        let analysis = analyse(build, &overrides_at(x), process, waivers)
+        let analysis = analyse(build, &overrides_at(x), processes, waivers)
             .ok()
             .filter(|analysis| analysis.sound())?;
         let values = analysis.values_under(&Variation::nominal()).ok()?;
@@ -130,7 +130,7 @@ pub fn close(
     let fit = least_squares(&begun, &steps, &mut residuals, ITERATIONS);
     let (x, iterations) = fit.map_or((begun.clone(), 0), |fit| (fit.x, fit.iterations));
     let overrides = overrides_at(&x);
-    let analysis = analyse(build, &overrides, process, waivers)?;
+    let analysis = analyse(build, &overrides, processes, waivers)?;
     let values = analysis.values_under(&Variation::nominal())?;
     let mut held = BTreeMap::new();
     for requirement in analysis
@@ -190,7 +190,7 @@ pub fn close(
             };
         };
         // Why the design cannot be made at `x`: the fault, or the first rule or connection broken.
-        let stopped = |x: &[f64]| match analyse(build, &overrides_at(x), process, waivers) {
+        let stopped = |x: &[f64]| match analyse(build, &overrides_at(x), processes, waivers) {
             Err(fault) => fault.to_string(),
             Ok(there) => {
                 let found = there

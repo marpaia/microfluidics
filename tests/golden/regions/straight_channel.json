@@ -3,7 +3,26 @@
     "arguments": "",
     "fingerprint": {
       "access": [],
-      "translates": [],
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,32000000",
+          [
+            [
+              "flow",
+              100000,
+              2000000
+            ]
+          ]
+        ]
+      ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
       "joints": [],
       "layers": [
         [
@@ -19,20 +38,6 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [
-        [
-          "it",
-          "@30000000,30000000",
-          "@30000000,32000000",
-          [
-            [
-              "flow",
-              100000,
-              2000000
-            ]
-          ]
-        ]
-      ],
       "ports": [
         [
           30000000,
@@ -51,7 +56,7 @@
           "Outlet"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {},
       "rectangles": [
         [
@@ -64,16 +69,12 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
       ],
+      "translates": [],
       "tunables": []
     }
   },
@@ -81,7 +82,26 @@
     "arguments": "length = 8mm, width = 40um",
     "fingerprint": {
       "access": [],
-      "translates": [],
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,38000000",
+          [
+            [
+              "flow",
+              40000,
+              8000000
+            ]
+          ]
+        ]
+      ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
       "joints": [],
       "layers": [
         [
@@ -97,20 +117,6 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [
-        [
-          "it",
-          "@30000000,30000000",
-          "@30000000,38000000",
-          [
-            [
-              "flow",
-              40000,
-              8000000
-            ]
-          ]
-        ]
-      ],
       "ports": [
         [
           30000000,
@@ -129,7 +135,7 @@
           "Outlet"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {},
       "rectangles": [
         [
@@ -142,16 +148,12 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
       ],
+      "translates": [],
       "tunables": []
     }
   },
@@ -159,7 +161,26 @@
     "arguments": "length = 0.5mm, width = 300um",
     "fingerprint": {
       "access": [],
-      "translates": [],
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,30500000",
+          [
+            [
+              "flow",
+              300000,
+              500000
+            ]
+          ]
+        ]
+      ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
       "joints": [],
       "layers": [
         [
@@ -175,20 +196,6 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [
-        [
-          "it",
-          "@30000000,30000000",
-          "@30000000,30500000",
-          [
-            [
-              "flow",
-              300000,
-              500000
-            ]
-          ]
-        ]
-      ],
       "ports": [
         [
           30000000,
@@ -207,7 +214,7 @@
           "Outlet"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {},
       "rectangles": [
         [
@@ -220,16 +227,12 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
       ],
+      "translates": [],
       "tunables": []
     }
   }

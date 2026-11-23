@@ -30,14 +30,23 @@ A benchmark is a directory under [`benchmarks/`](../benchmarks/):
 
 ```python
 class Candidate(Protocol):
-    inlet: AccessPad
+    buffer_in: AccessPad
+    reagent_in: AccessPad
+    sample_in: AccessPad
     outlet: AccessPad
-    lane: Sequence[TrenchLane]
 
 
 def conditions(chip: Candidate, run: mf.Conditions) -> None:
-    run.operate(viscosity=0.7 * mPa_s, drive={chip.inlet: 10 * mbar, chip.outlet: 0 * mbar})
-    run.balanced = mf.Requirement("Every lane gets the same flow", mf.flow(chip.lane), mf.equal_within(5 * pct))
+    buffer, reagent, sample = mf.Species(), mf.Species(), mf.Species()
+    run.buffer, run.reagent, run.sample = buffer, reagent, sample
+    run.operate(
+        viscosity=1 * mPa_s,
+        drive={chip.buffer_in: 5 * mbar, chip.reagent_in: 5 * mbar, chip.sample_in: 5 * mbar, chip.outlet: 0 * mbar},
+        feed={chip.buffer_in: {buffer: 100 * pct}, chip.reagent_in: {reagent: 100 * pct}, chip.sample_in: {sample: 100 * pct}},
+    )
+    run.buffer_share = mf.Requirement(
+        "Buffer is 89.2 % of the mixture", mf.fraction(buffer, chip.outlet), mf.target(89.2 * pct, within=1 * pct, relative=True)
+    )
 ```
 
 Scoring sets a candidate's own operating conditions and requirements aside and applies the benchmark's, so no design is judged by requirements it chose. Waivers do not count.
@@ -47,8 +56,9 @@ Scoring sets a candidate's own operating conditions and requirements aside and a
 | Benchmark | Task | Reference design |
 | --- | --- | --- |
 | [`metering_mixer`](../benchmarks/metering_mixer/brief.md) | Three liquids metered to 89.2 %, 10.72 % and 0.08 % from one pressure | `goenner_mixer`: 3 of 3 requirements hold; passes |
-| [`balanced_lanes`](../benchmarks/balanced_lanes/brief.md) | One inlet feeding eight lanes equally, at low shear | `mother_machine_manifold`: 3 of 3 requirements hold; passes |
+
+The benchmark's process is `flowjem-su8-pdms`, so a candidate is held to what FlowJEM makes.
 
 ## Evidence so far
 
-An agent given only the command and the `balanced_lanes` brief produced a design the benchmark passes, in 27 runs of the tool, with no fault in its Python. This is weak evidence. The guide's worked example has the benchmark's topology, so the agent adapted an example rather than designing from nothing, and it never saw the chip. The MCP server itself has been driven only by tests that speak its protocol.
+The MCP server has been driven only by tests that speak its protocol.

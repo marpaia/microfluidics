@@ -25,7 +25,7 @@ rows = 2
 "#;
 
 fn process() -> Process {
-    Process::bundled("conservative-su8-pdms").unwrap()
+    Process::bundled("cosinc-su8-pdms").unwrap()
 }
 
 /// A chip of `size` holding `count` lanes 2.6 mm apart: each a channel `length` long with

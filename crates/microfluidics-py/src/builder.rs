@@ -209,6 +209,13 @@ impl PyBuilder {
         self.body()?.access(position, &Origin::new(file, line)).map_err(raised)
     }
 
+    fn fiducial(&mut self, at: &Bound<'_, PyAny>, file: &str, line: u32) -> PyResult<()> {
+        let position = point(at)?;
+        self.body()?
+            .fiducial(position, &Origin::new(file, line))
+            .map_err(raised)
+    }
+
     fn vertex(&mut self, name: &str, file: &str, line: u32) -> PyResult<()> {
         self.body()?.vertex(name, &Origin::new(file, line)).map_err(raised)
     }

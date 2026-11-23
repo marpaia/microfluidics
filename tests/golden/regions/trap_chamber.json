@@ -3,7 +3,26 @@
     "arguments": "",
     "fingerprint": {
       "access": [],
-      "translates": [],
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,30400000",
+          [
+            [
+              "flow",
+              100000,
+              400000
+            ]
+          ]
+        ]
+      ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
       "joints": [],
       "layers": [
         [
@@ -19,20 +38,6 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [
-        [
-          "it",
-          "@30000000,30000000",
-          "@30000000,30400000",
-          [
-            [
-              "flow",
-              100000,
-              400000
-            ]
-          ]
-        ]
-      ],
       "ports": [
         [
           30000000,
@@ -51,7 +56,7 @@
           "Outlet"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {},
       "rectangles": [
         [
@@ -72,16 +77,12 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
       ],
+      "translates": [],
       "tunables": []
     }
   },
@@ -89,7 +90,26 @@
     "arguments": "channel_length = 2mm, channel_width = 60um, trap_width = 800um, trap_length = 300um",
     "fingerprint": {
       "access": [],
-      "translates": [],
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,32000000",
+          [
+            [
+              "flow",
+              60000,
+              2000000
+            ]
+          ]
+        ]
+      ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
       "joints": [],
       "layers": [
         [
@@ -105,20 +125,6 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [
-        [
-          "it",
-          "@30000000,30000000",
-          "@30000000,32000000",
-          [
-            [
-              "flow",
-              60000,
-              2000000
-            ]
-          ]
-        ]
-      ],
       "ports": [
         [
           30000000,
@@ -137,7 +143,7 @@
           "Outlet"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {},
       "rectangles": [
         [
@@ -158,16 +164,12 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
       ],
+      "translates": [],
       "tunables": []
     }
   },
@@ -175,7 +177,26 @@
     "arguments": "trap_width = 50um, trap_length = 30um",
     "fingerprint": {
       "access": [],
-      "translates": [],
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,30400000",
+          [
+            [
+              "flow",
+              100000,
+              400000
+            ]
+          ]
+        ]
+      ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
       "joints": [],
       "layers": [
         [
@@ -191,20 +212,6 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [
-        [
-          "it",
-          "@30000000,30000000",
-          "@30000000,30400000",
-          [
-            [
-              "flow",
-              100000,
-              400000
-            ]
-          ]
-        ]
-      ],
       "ports": [
         [
           30000000,
@@ -223,7 +230,7 @@
           "Outlet"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {},
       "rectangles": [
         [
@@ -244,16 +251,12 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
       ],
+      "translates": [],
       "tunables": []
     }
   }

@@ -25,6 +25,8 @@ pub struct Edge {
     pub volume: f64,
     /// The width and height of its tightest duct: where speed and shear are highest.
     pub narrowest: (f64, f64),
+    /// How many straight ducts it is stated as, end to end.
+    pub ducts: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -122,6 +124,7 @@ pub fn extract(chip: &Chip, nets: &[Net], variation: &Variation) -> Result<Graph
             resistance_per_viscosity: resistance,
             volume,
             narrowest,
+            ducts: edge.ducts.len(),
         });
     }
     Ok(graph)

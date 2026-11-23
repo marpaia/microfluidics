@@ -6,22 +6,22 @@ This page describes how the tool decides whether a design passes: the checks it 
 
 Everything that verifies a design returns the same thing, a check. A check has a status (satisfied, violated, waived or not run), the findings it made, and the quantities it measured. Nothing else decides whether a design passes.
 
-Verification runs the checks in a fixed order. Each answers one of four questions:
+Verification runs the checks in a fixed order. First come those that hold whatever makes the chip. Then, for each process the design names, come those made against that process; each of them carries the process's name. Each check answers one of four questions:
 
-| Question | Check | Verifies |
-| --- | --- | --- |
-| **Fabrication:** can it be made? | `rules` | The chip as drawn is within the process's design rules |
-| | `mask-rules` | The prepared masks are within the rules, overlap rules included |
-| | `print` | Every narrow feature prints at its drawn width, without vanishing or merging with a neighbour |
-| **Function:** does it do what is asked? | `connectivity` | The connections the design states are the connections its geometry makes |
-| | `graph` | Flow is conserved at every vertex and is slow enough for the model |
-| | `requirement/<name>` | Each requirement holds |
-| **Variation:** does it still, as fabrication varies? | `corners` | Every requirement holds at every corner of the process, with the range of values reached |
-| | `yield` | At least the requested share of chips meets every requirement |
-| **Integrity:** is the tool's own output sound? | `deterministic` | The design builds the same chip twice from the same values |
-| | `gds-readback`, `dxf-readback` | The mask files, read back from disk, hold exactly the outlines planned |
+| Question | Check | Against each process | Verifies |
+| --- | --- | --- | --- |
+| **Fabrication:** can it be made? | `rules` | Yes | The chip as drawn is within the process's design rules |
+| | `mask-rules` | Yes | The prepared masks are within the rules, overlap rules included |
+| | `print` | Yes, when the process states a print model | Every narrow feature prints at its drawn width, without vanishing or merging with a neighbour |
+| **Function:** does it do what is asked? | `connectivity` | No | The connections the design states are the connections its geometry makes |
+| | `graph` | No | Flow is conserved at every vertex, laminar, and loses little enough to inertia for the model |
+| | `requirement/<name>` | No | Each requirement holds |
+| **Variation:** does it still, as fabrication varies? | `corners` | Yes | Every requirement holds at every corner of the process, with the range of values reached |
+| | `yield` | Yes | At least the requested share of chips meets every requirement |
+| **Integrity:** is the tool's own output sound? | `deterministic` | No | The design builds the same chip twice from the same values |
+| | `gds-readback`, `dxf-readback` | Yes | The mask files, read back from disk, hold exactly what was planned |
 
-A design passes only when every check is satisfied or waived. A check that did not run counts against it. A report's problem count is the number of findings that are not waived plus the number of checks that did not run.
+A design passes only when every check is satisfied or waived, at every process it names. A check that did not run counts against it. The `rules` and `mask-rules` checks note which of a process's limits its fab has not published. A report's problem count is the number of findings that are not waived plus the number of checks that did not run.
 
 ## Connectivity
 
@@ -44,7 +44,16 @@ A design states how it is run with `operate`: the viscosity, a pressure or a flo
 
 The flow graph is extracted from what the design states, never from its outlines. Every region's edges and every routed channel become edges of the graph, and ports placed together become one vertex. The connectivity check is what justifies this. Each edge's resistance is the sum of its ducts' resistances, computed from the exact series solution for a rectangular duct. The graph is solved for the pressure at every vertex and the flow in every edge, and fed species mix at each vertex in proportion to flow.
 
-The model assumes steady, slow, fully developed flow. Bends, junctions and entrance lengths add no resistance. The `graph` check reports a finding when any edge's Reynolds number exceeds 1.
+The model assumes steady, laminar, fully developed flow, with pressure lost to viscosity alone. Bends, junctions and entrance lengths add no resistance. The `graph` check says when that is too much to leave out, with two findings:
+
+| Finding | Raised when | Why |
+| --- | --- | --- |
+| `laminar` | The Reynolds number in an edge's tightest duct is above 2,000 | Flow in a duct may stop being laminar near there |
+| `inertia` | What an edge loses to inertia is more than 1 % of the largest difference of pressure on the chip | The model leaves that loss out |
+
+An edge's loss to inertia is estimated as one dynamic pressure, half the density times the mean speed squared in its tightest duct, for each straight duct the edge is stated as: an entrance, and a bend or a change of section where one duct meets the next. That is an order of magnitude, not a calculation of the loss. A Reynolds number well above 1 is no finding of itself: a long straight channel flushed at a Reynolds number of 8 loses a few hundredths of a percent of its pressure to inertia. The check reports the largest Reynolds number and the largest share lost.
+
+Like any finding, these can be [waived](fabrication.md#waivers) by a person with a reason.
 
 ## Requirements
 
@@ -60,7 +69,7 @@ Measures include flow rate, wall shear, pressure, pressure drop, velocity, Reyno
 
 A design marks parameters as tunable with `tune`, each within its declared range. `close` changes those parameters until every requirement holds.
 
-Each trial is the whole design built again: checked against the design rules and its connections, with its network extracted and solved. The search never moves to a trial that breaks a rule or a connection, so the result is a design that can still be made.
+Each trial is the whole design built again: checked against the design rules of every process it names and against its connections, with its network extracted and solved. The search never moves to a trial that breaks a rule or a connection, so the result is one design that can still be made at each of its fabs.
 
 The search is bounded least squares by the Levenberg-Marquardt method, with derivatives taken by stepping each parameter. A target value pulls all the way to the target. A limit or a spread pulls only until it holds with half its tolerance to spare. The search prefers to stay near its starting point. Tuned lengths lie on the masks' 1 nm grid, and a parameter that is a count moves in whole numbers.
 
@@ -70,7 +79,7 @@ When the requirements cannot all be met, closure reports which requirement is fu
 
 ## Corners and yield
 
-A process may state how far a fabricated chip departs from its drawing, as standard deviations of each layer's height, of every width on a mask together, and of each feature's width alone. The flow graph is extracted and solved again under each variation. The layout is not redrawn.
+Each process may state how far a fabricated chip departs from its drawing, as standard deviations of each layer's height, of every width on a mask together, and of each feature's width alone. The flow graph is extracted and solved again under each variation. The layout is not redrawn.
 
 - **Corners** take each layer at its thickest and thinnest and every feature at its widest and narrowest, three standard deviations out, in every combination. Every requirement must hold at every corner.
 - **Yield** draws 500 chips at random from a fixed seed, with every tolerance varying, and reports the share that meets every requirement. It runs when a design has a requirement on `mf.chip_yield()`.
@@ -79,4 +88,4 @@ A process may state how far a fabricated chip departs from its drawing, as stand
 
 ## The report
 
-`export` writes `REPORT.md` and `report.json`. Each lists every check with its status, its findings and what it measured. The report also carries a hash of every input: each source file read (the design, any regions beside it, and the standard regions it places), the process, the tuned values, and the elaborated design.
+`export` writes `report.json`, which lists every check at every process with its status, its findings and what it measured, and for each process a `REPORT.md` holding the checks that bear on it: those that hold whatever makes the chip, and its own. The report also carries a hash of every input: each source file read (the design, any regions beside it, and the standard regions it places), the process, the tuned values, and the elaborated design.

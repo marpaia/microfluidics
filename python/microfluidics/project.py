@@ -73,7 +73,7 @@ def load(path: str | os.PathLike[str]) -> type[Design]:
 
 class Project:
     """A design file with what sits beside it: its tuned values, a person's waivers, and the
-    process it names."""
+    processes it names."""
 
     def __init__(self, path: str | os.PathLike[str]) -> None:
         self.path = Path(path)
@@ -84,7 +84,7 @@ class Project:
         return self.design.elaborate(overrides)
 
     def beside(self) -> dict[str, Any]:
-        """What sits beside the file: `tuned`, `tuned_path`, `waivers` and `process`."""
+        """What sits beside the file: `tuned`, `tuned_path`, `waivers` and `processes`."""
         held: dict[str, Any] = json.loads(_engine.beside(str(self.path), self.build))
         return held
 
@@ -100,13 +100,15 @@ class Project:
         """Verify the design and write its masks, report and elaborated design."""
         return Report.read(json.loads(_engine.export(str(self.path), self.build, str(directory))))
 
-    def corners(self) -> Check:
-        """Whether the requirements hold at every corner of the process."""
-        return Check.read(json.loads(_engine.corners(str(self.path), self.build)))
+    def corners(self) -> list[Check]:
+        """For each process, whether the requirements hold at every corner of it."""
+        return [Check.read(held) for held in json.loads(_engine.corners(str(self.path), self.build))]
 
-    def chip_yield(self, chips: int = 500, seed: int = 1) -> Check:
-        """The share of chips, made within the process's tolerances, that meet every requirement."""
-        return Check.read(json.loads(_engine.chip_yield(str(self.path), self.build, chips, seed)))
+    def chip_yield(self, chips: int = 500, seed: int = 1) -> list[Check]:
+        """For each process, the share of chips, made within its tolerances, that meet every
+        requirement."""
+        held = json.loads(_engine.chip_yield(str(self.path), self.build, chips, seed))
+        return [Check.read(each) for each in held]
 
     def scene(self, trial: str | None = None) -> dict[str, Any]:
         """What a viewer draws: the chip, where each thing was made, what flows, and what every
@@ -121,8 +123,9 @@ class Project:
         return _engine.keep(str(self.path), self.build, values)
 
     def bias(self) -> list[dict[str, Any]]:
-        """For each layer: the mask bias at which its narrowest feature prints as drawn, and the
-        bias the process states, in micrometres."""
+        """For each process that states a print model, and each layer: the mask bias at which the
+        layer's narrowest feature prints as drawn, and the bias the process states, in
+        micrometres."""
         held: list[dict[str, Any]] = json.loads(_engine.solve_bias(str(self.path), self.build))
         return held
 

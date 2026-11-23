@@ -1,20 +1,21 @@
 # Examples
 
-The five designs in [`designs/`](../designs/), what each demonstrates, and what verification reports for it. The operating values and requirements in them are examples, not values chosen for a strain or an assay.
+The four designs in [`designs/`](../designs/), what each demonstrates, which fab each can be made at, and what verification reports for it. The operating values and requirements in them are examples, not values chosen for a strain or an assay.
 
-| Design | As written | After closure |
-| --- | --- | --- |
-| [`test_channel`](../designs/test_channel.py) | Passes | Nothing to tune |
-| [`mixer`](../designs/mixer.py) | Passes: three liquids in shares of 50 %, 30 % and 20 % | Unchanged |
-| [`goenner_mixer`](../designs/goenner_mixer.py) | Does not pass: shares of 88.76 %, 11.16 % and 0.0798 % | Passes, corners included: shares of 89.18 %, 10.74 % and 0.07995 % |
-| [`mother_machine_pilot`](../designs/mother_machine_pilot.py) | Passes | Nothing to tune |
-| [`mother_machine_manifold`](../designs/mother_machine_manifold.py) | Does not pass: the middle lanes get more than twice the flow of the outer ones | Passes, corners included: lane flows within 2.7 % of their mean |
+| Design | [FlowJEM](fabs/flowjem.md) | [COSINC](fabs/cosinc.md) | As written | After closure |
+| --- | --- | --- | --- | --- |
+| [`test_channel`](../designs/test_channel.py) | Yes | Yes | Passes | Nothing to tune |
+| [`mixer`](../designs/mixer.py) | Yes | Yes | Passes: three liquids in shares of 50 %, 30 % and 20 % | Unchanged |
+| [`goenner_mixer`](../designs/goenner_mixer.py) | Yes | Yes | Does not pass: shares of 88.76 %, 11.16 % and 0.0798 % | Passes, corners included: shares of 89.18 %, 10.74 % and 0.07995 % |
+| [`mother_machine`](../designs/mother_machine.py) | No: its trenches are under 5 um | Yes, on assumed limits | Passes | Nothing to tune |
 
-The tuned values for the two closed designs are kept beside them as `<design>.tuned.toml`. [`designs/pilot_wafer.toml`](../designs/pilot_wafer.toml) places six copies of the manifold design on a 100 mm wafer.
+A design is declared for a fab by naming the fab's process in its `processes`, and passes only when it passes at every one. COSINC has published none of its limits, so passing there means passing against assumptions; each report and each [hand-off sheet](fabrication.md#hand-off-sheets) says so.
+
+The tuned values for the closed design are kept beside it as `goenner_mixer.tuned.toml`. [`designs/mother_machine_wafer.toml`](../designs/mother_machine_wafer.toml) places eight copies of the mother machine on a 100 mm wafer.
 
 ## Test channel
 
-One straight channel between two pads, with a process monitor. Its flow at a known pressure gives the flow layer's real height, which makes it the design to fabricate first when characterising a process.
+One straight channel between two pads in one 20 um layer, with a line monitor. Its flow at a known pressure gives the layer's real height, which makes it the design to fabricate first when characterising a process.
 
 ## Mixer
 
@@ -30,10 +31,22 @@ The process corners show what holds those shares on a fabricated chip. Every cha
 
 A mixer that meters with channels of different widths does not have this property, because a narrow channel responds to a width error far more than a wide one. With a 27 um channel for the sample and a 500 um channel for the buffer, the same targets are met as drawn, and the sample's share ranges from 0.057 % to 0.112 % across the corners.
 
-## Mother-machine pilot
+## Mother machine
 
-A two-layer mother machine: eight independent lanes, each a feed channel with 100 growth trenches per side between its own inlet and outlet pads, with two alignment marks and a process monitor. Its 1,600 trenches are stored as sixteen rows. The trench and channel sizes are the `TrenchLane` region's defaults, not values tuned to a strain or a process.
+A two-layer mother machine for *Escherichia coli*, laid out as the chip of James and Kempf et al. (2025) is in their Figure S1: three separate lanes on one slab, each a straight channel between its own inlet and outlet with growth trenches off both sides, on a 24 x 50 mm coverslip 0.17 mm thick. It carries two alignment marks and a process monitor. Its 7,998 trenches are stored as six rows of 1,333.
 
-## Mother-machine manifold
+| Property | Value | From |
+| --- | --- | --- |
+| Three lanes, each with its own inlet and outlet | | Figure S1 of the paper |
+| Slab, lane spacing, hole-to-hole distance | 14.5 x 20 mm, 4.2 mm, 13.2 mm | Measured from Figure S1's photograph against the 24 x 50 mm coverslip |
+| Trenches | About 8,000 in all | The paper's text |
+| Trench pitch | 2.6 um | The paper's 400 trenches in a 0.52 mm field of view, over the two sides of one lane |
+| Holes, coverslip | 0.75 mm punch; No. 1.5H | The paper's methods |
+| Trench | 1 um wide, 25 um long, 1.1 um deep | Assumed |
+| Channel | 100 um wide, 25 um deep | Assumed |
+| Trenches per lane | 1,333 a side | Assumed: the 8,000 shared equally among the lanes |
+| Flow | 20 uL/min in each lane | The paper's methods |
 
-The same eight lanes fed from one inlet through a manifold and gathered by a second. As written, the lanes are unbalanced. Closure balances them by bringing the lanes to a 0.4 mm pitch, narrowing each lane's feed channel to 40 um and widening the manifold trunks to 240 um. The pitch and the lane width end at the limits of their ranges, so the design has no margin left in those two parameters.
+The paper gives no cross-section of a trench or of a channel, and its master was a gift from another laboratory. The assumed values are common ones for mother machines of this organism, and are not that chip's.
+
+At 20 uL/min the medium in each channel is replaced in 0.09 s. The Reynolds number in a channel of the assumed section is 7.6, and inertia loses 0.03 % of the pressure that drives the chip, so the flow model stands. Across COSINC's assumed corners the time to replace the medium ranges from 0.08 s to 0.11 s.

@@ -26,10 +26,10 @@ impl PyElaborated {
         self.inner.name.clone()
     }
 
-    /// The name of the process the design is made in, when it names one.
+    /// The names of the processes the design is made in.
     #[getter]
-    fn process(&self) -> Option<String> {
-        self.inner.process.clone()
+    fn processes(&self) -> Vec<String> {
+        self.inner.processes.clone()
     }
 
     /// The name of the region each instance the design itself places is of.

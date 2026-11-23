@@ -46,7 +46,6 @@ jobs:
         run: |
           . .venv/bin/activate
           mypy
-          mypy --strict benchmarks/balanced_lanes/conditions.py
           mypy --strict benchmarks/metering_mixer/conditions.py
           pyright
       - name: Python tests

@@ -2,7 +2,7 @@
 
 import microfluidics as mf
 from microfluidics.layers import FLOW
-from microfluidics.processes import CONSERVATIVE_SU8_PDMS
+from microfluidics.processes import COSINC_SU8_PDMS, FLOWJEM_SU8_PDMS
 from microfluidics.regions import AccessPad, Junction, Serpentine
 from microfluidics.units import mbar, mm, mPa_s, pct, um
 
@@ -16,7 +16,7 @@ class Mixer(mf.Design):
     the chip is made.
     """
 
-    process = CONSERVATIVE_SU8_PDMS
+    processes = (FLOWJEM_SU8_PDMS, COSINC_SU8_PDMS)
     slab = mf.Slab(25 * mm, 20 * mm, thickness=4 * mm)
     glass = mf.Glass(75 * mm, 25 * mm, thickness=1 * mm)
     layers = mf.Stack({FLOW: mf.LayerSpec(height=50 * um, gds=1)})

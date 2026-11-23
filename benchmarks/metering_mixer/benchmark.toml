@@ -1,3 +1,3 @@
 name = "metering-mixer"
-process = "conservative-su8-pdms"
+process = "flowjem-su8-pdms"
 regions = ["access_pad", "serpentine", "junction", "straight_channel", "line_monitor"]

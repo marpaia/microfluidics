@@ -7,7 +7,7 @@ A design is a Python file holding one class. This is what it is written with; `d
 ```python
 import microfluidics as mf
 from microfluidics.layers import FLOW, TRENCH
-from microfluidics.processes import CONSERVATIVE_SU8_PDMS
+from microfluidics.processes import COSINC_SU8_PDMS
 from microfluidics.regions import AccessPad, Manifold, TrenchLane
 from microfluidics.units import Length, Pa, mbar, mm, mPa_s, pct, um
 
@@ -15,7 +15,7 @@ from microfluidics.units import Length, Pa, mbar, mm, mPa_s, pct, um
 class Lanes(mf.Design):
     """One inlet feeding eight lanes of growth trenches."""
 
-    process = CONSERVATIVE_SU8_PDMS
+    processes = (COSINC_SU8_PDMS,)
     slab = mf.Slab(24.2 * mm, 21 * mm, thickness=4 * mm)
     glass = mf.Glass(60 * mm, 24 * mm, thickness=0.17 * mm)
     layers = mf.Stack({TRENCH: mf.LayerSpec(height=1.1 * um, gds=1), FLOW: mf.LayerSpec(height=20 * um, gds=2)})
@@ -45,7 +45,7 @@ class Lanes(mf.Design):
         self.tune(self.feed, Manifold.trunk_width)
 ```
 
-- **The class body states the chip:** its `process`, its `slab` (width, depth, thickness), the `glass` the slab is bonded to (width, depth, thickness; the slab sits at its middle and must fit on it), its `layers` (each with a height and a GDSII number), and any parameters of its own.
+- **The class body states the chip:** its `processes` (a tuple: the chip is held to the rules of every process it names), its `slab` (width, depth, thickness), the `glass` the slab is bonded to (width, depth, thickness; the slab sits at its middle and must fit on it), its `layers` (each with a height and a GDSII number), and any parameters of its own.
 - **`build` places what is on it.** A design file holds exactly one `mf.Design` subclass.
 
 ## Names come from attributes

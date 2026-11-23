@@ -67,7 +67,7 @@ impl Benchmark {
     /// Verify a candidate under this benchmark's process, with no waivers. `candidate`
     /// builds the design with the benchmark's conditions in place of its own.
     pub fn score(&self, candidate: Build<'_>, overrides: &Overrides) -> Result<Score, ProjectError> {
-        let verified = verify(candidate, overrides, Some(&self.process), &[])?;
+        let verified = verify(candidate, overrides, std::slice::from_ref(&self.process), &[])?;
         let mut findings = Vec::new();
         let mut placed: BTreeMap<&str, usize> = BTreeMap::new();
         let instances = &verified.analysis.elaborated.instances;

@@ -3,17 +3,25 @@
     "arguments": "",
     "fingerprint": {
       "access": [],
-      "translates": [
+      "edges": [
         [
-          "it.left",
-          200,
-          1
-        ],
-        [
-          "it.right",
-          200,
-          1
+          "it",
+          "@30000000,30000000",
+          "@30000000,42000000",
+          [
+            [
+              "flow",
+              100000,
+              12000000
+            ]
+          ]
         ]
+      ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
       ],
       "joints": [],
       "layers": [
@@ -30,20 +38,6 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [
-        [
-          "it",
-          "@30000000,30000000",
-          "@30000000,42000000",
-          [
-            [
-              "flow",
-              100000,
-              12000000
-            ]
-          ]
-        ]
-      ],
       "ports": [
         [
           30000000,
@@ -62,7 +56,7 @@
           "Outlet"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {
         "it.observation_sites": 400.0
       },
@@ -3277,15 +3271,22 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
+      ],
+      "translates": [
+        [
+          "it.left",
+          200,
+          1
+        ],
+        [
+          "it.right",
+          200,
+          1
+        ]
       ],
       "tunables": []
     }
@@ -3294,17 +3295,25 @@
     "arguments": "channel_length = 6mm, channel_width = 40um, trench_width = 1um, trench_length = 40um, trench_pitch = 3um, trenches_per_side = 500",
     "fingerprint": {
       "access": [],
-      "translates": [
+      "edges": [
         [
-          "it.left",
-          500,
-          1
-        ],
-        [
-          "it.right",
-          500,
-          1
+          "it",
+          "@30000000,30000000",
+          "@30000000,36000000",
+          [
+            [
+              "flow",
+              40000,
+              6000000
+            ]
+          ]
         ]
+      ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
       ],
       "joints": [],
       "layers": [
@@ -3321,20 +3330,6 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [
-        [
-          "it",
-          "@30000000,30000000",
-          "@30000000,36000000",
-          [
-            [
-              "flow",
-              40000,
-              6000000
-            ]
-          ]
-        ]
-      ],
       "ports": [
         [
           30000000,
@@ -3353,7 +3348,7 @@
           "Outlet"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {
         "it.observation_sites": 1000.0
       },
@@ -11368,15 +11363,22 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
+      ],
+      "translates": [
+        [
+          "it.left",
+          500,
+          1
+        ],
+        [
+          "it.right",
+          500,
+          1
+        ]
       ],
       "tunables": []
     }
@@ -11385,7 +11387,26 @@
     "arguments": "trenches_per_side = 1",
     "fingerprint": {
       "access": [],
-      "translates": [],
+      "edges": [
+        [
+          "it",
+          "@30000000,30000000",
+          "@30000000,42000000",
+          [
+            [
+              "flow",
+              100000,
+              12000000
+            ]
+          ]
+        ]
+      ],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
       "joints": [],
       "layers": [
         [
@@ -11401,20 +11422,6 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [
-        [
-          "it",
-          "@30000000,30000000",
-          "@30000000,42000000",
-          [
-            [
-              "flow",
-              100000,
-              12000000
-            ]
-          ]
-        ]
-      ],
       "ports": [
         [
           30000000,
@@ -11433,7 +11440,7 @@
           "Outlet"
         ]
       ],
-      "process": null,
+      "processes": [],
       "quantities": {
         "it.observation_sites": 2.0
       },
@@ -11464,16 +11471,12 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
       ],
+      "translates": [],
       "tunables": []
     }
   }

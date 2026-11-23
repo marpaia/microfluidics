@@ -1,0 +1,141 @@
+# COSINC (University of Colorado Boulder): a two-layer SU-8 master made by hand in the shared
+# cleanroom, PDMS cast from it and bonded to glass. COSINC publishes its tools and rates, and no
+# limit on what they make in SU-8: every limit here is an assumption, named under `[fab]`, until
+# COSINC's staff or a test wafer confirm it.
+name = "cosinc-su8-pdms"
+description = "COSINC cleanroom, by hand: two-layer SU-8 master on silicon, PDMS cast and bonded to glass."
+
+# The smallest width of a feature, and of the wall between two features, on any mask. COSINC's
+# laser writers are stated as sub-micron; what they resolve in SU-8 is not stated.
+[[rules]]
+name = "feature.width"
+kind = "width"
+min_um = 1.0
+
+[[rules]]
+name = "feature.space"
+kind = "space"
+min_um = 1.0
+
+# How far one mask layer may sit from another after alignment. A shallow feature that opens
+# into a deeper one is drawn this far into it.
+[[rules]]
+name = "layer.overlap"
+kind = "overlap"
+min_um = 3.0
+
+# The tallest feature, or wall between features, relative to its width that the resist holds.
+[[rules]]
+name = "resist.aspect"
+kind = "aspect"
+max = 2.0
+
+# The widest unsupported PDMS roof relative to its height before it sags onto the glass. A
+# punched hole removes the roof it passes through.
+[[rules]]
+name = "roof.span"
+kind = "roof_span"
+max = 12.0
+punch_um = 750.0
+
+# How close two ports, and a port and the chip's edge, may be.
+[[rules]]
+name = "port.pitch"
+kind = "port_pitch"
+min_um = 2500.0
+
+[[rules]]
+name = "port.edge"
+kind = "edge_margin"
+min_um = 2000.0
+
+# The glass the chip is bonded to.
+[[rules]]
+name = "chip.size"
+kind = "extent"
+max_mm = [50.0, 24.0]
+
+# The layer heights the process can spin, and how many layers it builds.
+[[rules]]
+name = "layer.height"
+kind = "layer_height"
+min_um = 0.8
+max_um = 100.0
+
+[[rules]]
+name = "layer.count"
+kind = "layer_count"
+max = 2
+
+# How far a made chip may be from its drawing, each as one standard deviation: the width of each
+# feature on its own, the width of every feature of a layer together, and a layer's height.
+[tolerances]
+width_sigma_um = 0.3
+width_bias_sigma_um = 0.5
+height_sigma_fraction = 0.05
+
+# How masks print: the exposure is the mask blurred by this much, and resist stays where it
+# passes the threshold. These are not measurements of any tool at COSINC.
+[print]
+blur_um = 0.4
+threshold = 0.5
+tolerance_um = 0.1
+calibrated = false
+
+[fab]
+name = "COSINC"
+handoff = "traveler"
+drawing = "gds"
+source = "https://www.colorado.edu/facility/cosinc/facilities"
+read = "2026-11-23"
+assumed = [
+    "feature.width", "feature.space", "layer.overlap", "resist.aspect", "roof.span", "port.pitch", "port.edge",
+    "chip.size", "layer.height", "layer.count", "tolerances", "print",
+]
+questions = [
+    "May SU-8 grades thinner than the stocked SU8-10 and SU8-3050 be brought in for a layer of about 1 um?",
+    "Is PDMS allowed in the cleanroom, and where may it be cast and plasma bonded?",
+    "Which laser writer is in service, and which file formats does it read?",
+    "What are its smallest feature in SU-8 and its accuracy aligning one layer to another?",
+    "Who may become a user, at which rate, and under what agreement and insurance?",
+]
+
+# The steps are those of the Jun lab's mother machine handbook (v2.00, 2010), written for another
+# cleanroom's tools and for a chip of its own heights. Each resist, spin speed, bake and exposure
+# is a starting point to be found again on COSINC's tools for the heights this chip asks.
+[[steps]]
+title = "Base layer"
+layer = "trench"
+text = "Dehydrate the wafer at 200 C for 5 minutes. Spin SU-8 2000.5, soft bake at 65, 95 and 65 C for 1 minute each, flood expose, and bake again the same way. Later layers hold to this one better than to bare silicon."
+
+[[steps]]
+title = "Coat"
+layer = "trench"
+text = "Spin the resist that gives this layer's height. The handbook mixes SU-8 2001 and SU-8 2002, finds the mix by trial, and spins it at 3000 rpm for 30 seconds. Soft bake at 65 C for 1 minute, 95 C for 3 minutes and 65 C for 1 minute."
+
+[[steps]]
+title = "Expose and develop"
+layer = "trench"
+text = "Expose with a long-pass filter, in several short cycles and not one long one. Bake at 65 C for 1 minute, 95 C for 3 minutes and 65 C for 1 minute. Develop in SU-8 developer for 1 minute, rinse in isopropanol for 10 seconds, then in water, and dry with nitrogen."
+
+[[steps]]
+title = "Coat"
+layer = "flow"
+text = "Spin the resist and speed that give this layer's height. The handbook spins SU-8 2015 at 1500 rpm for 60 seconds for its main channel. Soft bake by raising the temperature slowly from 65 C to 95 C over 10 to 30 minutes, then cool slowly. Strip the resist from the outer 5 mm of the wafer with developer while it spins at 500 rpm, so that the mask sits flat."
+
+[[steps]]
+title = "Expose and develop"
+layer = "flow"
+text = "Expose in several cycles with a long-pass filter. Bake at 65 C for 1 minute, 95 C for 5 minutes and 65 C for 1 minute. Develop for 5 to 10 minutes, rinse in isopropanol, then in water, and dry. Hard bake for 5 minutes at 150 C, stepping up to it and down from it through 65 C and 95 C, 1 minute at each."
+
+[[steps]]
+title = "Cast"
+text = "Mix Sylgard 184 base and curing agent 10 to 1, degas, pour over the master, and cure at 65 C for at least 2.5 hours. Peel along the length of the narrowest features and cut out each chip."
+
+[[steps]]
+title = "Punch"
+text = "Punch each access point through the slab from the feature side, and clear the cores."
+
+[[steps]]
+title = "Bond"
+text = "Clean the slab with tape and isopropanol, and the glass by sonication in acetone, then isopropanol. Treat both in oxygen plasma for about 30 seconds, press the feature side onto the glass, and bake at 95 C for 1 hour."

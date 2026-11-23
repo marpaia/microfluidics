@@ -2,8 +2,8 @@
 
 Reads a GDSII file and, for each layer given as NUMBER=DRAWING.dxf, reports as JSON what KLayout
 makes of them: how many outlines the layer has when flattened, their area, how many places are
-narrower than --width or closer than --space, and the area by which the DXF drawing differs
-from the GDSII layer.
+narrower than --width or closer than --space, the area by which the DXF drawing differs from the
+GDSII layer, how many outlines the drawing holds, and the area where any two of them overlap.
 
     python scripts/klayout_check.py chip.gds 1=mask_1_trench.dxf 2=mask_2_flow.dxf --width 1.0 --space 2.0
 
@@ -57,7 +57,14 @@ def main() -> None:
         }
         drawing = drawings.get(str(info.layer))
         if drawing is not None:
-            measured["drawing_differs_um2"] = (region ^ drawing_region(drawing)).area() * layout.dbu**2
+            drawn = drawing_region(drawing)
+            measured["drawing_differs_um2"] = (region ^ drawn).area() * layout.dbu**2
+            # Taken one by one, the drawing's outlines enclose more than they do together only
+            # where two of them overlap.
+            drawn.merged_semantics = False
+            apart = sum(polygon.area() for polygon in drawn.each())
+            measured["drawing_outlines"] = drawn.count()
+            measured["drawing_overlap_um2"] = (apart - drawn.merged().area()) * layout.dbu**2
         layers[str(info.layer)] = measured
     result = {
         "database_unit_um": layout.dbu,

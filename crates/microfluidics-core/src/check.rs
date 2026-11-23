@@ -38,9 +38,19 @@ pub struct Finding {
 pub struct Waiver {
     pub rule: String,
     pub subject: String,
+    /// The process whose finding is accepted; one that names none accepts it at every process.
+    #[serde(default)]
+    pub process: Option<String>,
     pub reason: String,
     /// Who decided.
     pub by: String,
+}
+
+impl Waiver {
+    /// Whether the waiver speaks of findings made against `process`.
+    pub fn applies(&self, process: Option<&str>) -> bool {
+        self.process.is_none() || self.process.as_deref() == process
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -52,6 +62,8 @@ pub struct Check {
     pub metrics: BTreeMap<String, f64>,
     /// Why the check did not run, or a caveat on its result.
     pub note: Option<String>,
+    /// The process the check was made against, when it depends on one.
+    pub process: Option<String>,
 }
 
 impl Check {
@@ -83,6 +95,7 @@ impl Check {
             findings,
             metrics,
             note: None,
+            process: None,
         }
     }
 
@@ -93,7 +106,14 @@ impl Check {
             findings: Vec::new(),
             metrics: BTreeMap::new(),
             note: Some(why.to_owned()),
+            process: None,
         }
+    }
+
+    /// The check as one made against the process `name`.
+    pub fn for_process(mut self, name: Option<&str>) -> Self {
+        self.process = name.map(str::to_owned);
+        self
     }
 
     /// Whether the check stands in the way of a design passing.
@@ -124,6 +144,7 @@ mod tests {
         let waiver = Waiver {
             rule: "trench.space".into(),
             subject: "a".into(),
+            process: None,
             reason: "measured on the last run".into(),
             by: "a researcher".into(),
         };

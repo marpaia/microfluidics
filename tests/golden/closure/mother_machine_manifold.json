@@ -23,7 +23,7 @@
   ],
   "converged": true,
   "distances": {
-    "balanced": 0.5412014479812823,
+    "balanced": 0.5412014479812799,
     "gentle": 0.6495948369592199
   },
   "tuned_values": "\"drain.trunk_width\" = \"239.724um\"\n\"feed.trunk_width\" = \"239.724um\"\n\"lane_width\" = \"40.338um\"\n\"pitch\" = \"400um\"\n"

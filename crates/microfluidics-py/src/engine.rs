@@ -53,15 +53,17 @@ fn report(report: &Report) -> Value {
     json!({ "design": report.design, "inputs": report.inputs, "checks": report.checks, "passes": report.passes, "problems": report.problems })
 }
 
-/// What sits beside a design's file: its tuned values, how many waivers, and its process.
+/// What sits beside a design's file: its tuned values, how many waivers, and its processes.
 #[pyfunction]
 pub fn beside(py: Python<'_>, file: &str, build: &Bound<'_, PyAny>) -> PyResult<String> {
     let build = building(py, build);
     let project = Project::beside(Path::new(file), &build).map_err(failed)?;
-    let process = project.process.as_ref().map(|process| process.name.clone());
+    let processes: Vec<&str> = (project.processes.iter())
+        .map(|process| process.name.as_str())
+        .collect();
     let tuned = project.tuned_path().display().to_string();
     Ok(text(
-        &json!({ "tuned": project.overrides.toml(), "tuned_path": tuned, "waivers": project.waivers.len(), "process": process }),
+        &json!({ "tuned": project.overrides.toml(), "tuned_path": tuned, "waivers": project.waivers.len(), "processes": processes }),
     ))
 }
 
@@ -108,7 +110,8 @@ pub fn export(py: Python<'_>, file: &str, build: &Bound<'_, PyAny>, directory: &
     Ok(text(&answer))
 }
 
-/// One check that needs the design analysed and its process's tolerances.
+/// One check for each process the design names, each needing the design analysed and that
+/// process's tolerances.
 fn across(
     py: Python<'_>,
     file: &str,
@@ -117,21 +120,25 @@ fn across(
 ) -> PyResult<String> {
     let build = building(py, build);
     let project = Project::beside(Path::new(file), &build).map_err(failed)?;
-    let analysis = analyse(&build, &project.overrides, project.process.as_ref(), &project.waivers).map_err(raised)?;
-    let process = project
-        .process
-        .as_ref()
-        .ok_or_else(|| stated("the design names no process, so there are no tolerances to vary"))?;
-    Ok(text(&json!(run(&analysis, process))))
+    let analysis = analyse(&build, &project.overrides, &project.processes, &project.waivers).map_err(raised)?;
+    if project.processes.is_empty() {
+        return Err(stated(
+            "the design names no process, so there are no tolerances to vary",
+        ));
+    }
+    let checks: Vec<Check> = (project.processes.iter())
+        .map(|process| run(&analysis, process).for_process(Some(&process.name)))
+        .collect();
+    Ok(text(&json!(checks)))
 }
 
-/// Whether the design's requirements hold at every corner of its process.
+/// Whether the design's requirements hold at every corner of each of its processes.
 #[pyfunction]
 pub fn corners(py: Python<'_>, file: &str, build: &Bound<'_, PyAny>) -> PyResult<String> {
     across(py, file, build, at_corners)
 }
 
-/// The share of chips, made within the process's tolerances, that meet every requirement.
+/// The share of chips, made within each process's tolerances, that meet every requirement.
 #[pyfunction]
 pub fn chip_yield(py: Python<'_>, file: &str, build: &Bound<'_, PyAny>, chips: usize, seed: u64) -> PyResult<String> {
     across(py, file, build, |analysis, process| {
@@ -139,19 +146,32 @@ pub fn chip_yield(py: Python<'_>, file: &str, build: &Bound<'_, PyAny>, chips: u
     })
 }
 
-/// For each layer, the mask bias in micrometres at which its narrowest feature prints as
-/// drawn, with the bias the process states.
+/// For each process that states a print model, and each layer: the mask bias in micrometres at
+/// which the layer's narrowest feature prints as drawn, with the bias the process states.
 #[pyfunction]
 pub fn solve_bias(py: Python<'_>, file: &str, build: &Bound<'_, PyAny>) -> PyResult<String> {
     let build = building(py, build);
     let project = Project::beside(Path::new(file), &build).map_err(failed)?;
-    let process = project.process.as_ref().filter(|process| process.print.is_some());
-    let process = process.ok_or_else(|| stated("the design's process states no print model to find a bias by"))?;
-    let chip = build(&project.overrides).map_err(raised)?.chip;
-    let solved = bias_for(&chip, process);
-    let layers: Vec<Value> = (chip.layers.iter())
-        .map(|layer| json!({ "layer": layer.name, "bias_um": solved.get(&layer.name).map(|bias| bias * 1e6 + 0.0), "stated_um": process.mask(&layer.name).bias * 1e6 + 0.0 }))
+    let printing: Vec<_> = (project.processes.iter())
+        .filter(|process| process.print.is_some())
         .collect();
+    if printing.is_empty() {
+        return Err(stated(
+            "no process the design names states a print model to find a bias by",
+        ));
+    }
+    let chip = build(&project.overrides).map_err(raised)?.chip;
+    let mut layers: Vec<Value> = Vec::new();
+    for process in printing {
+        let solved = bias_for(&chip, process);
+        layers.extend(chip.layers.iter().map(|layer| {
+            json!({
+                "process": process.name, "layer": layer.name,
+                "bias_um": solved.get(&layer.name).map(|bias| bias * 1e6 + 0.0),
+                "stated_um": process.mask(&layer.name).bias * 1e6 + 0.0,
+            })
+        }));
+    }
     Ok(text(&json!(layers)))
 }
 
@@ -178,7 +198,7 @@ pub fn scene(py: Python<'_>, file: &str, build: &Bound<'_, PyAny>, trial: Option
         project.overrides.0.extend(trial.0);
     }
     let verified = project.verify().map_err(failed)?;
-    serde_json::to_string(&scene_of(&verified, project.process.as_ref())).map_err(|error| stated(error.to_string()))
+    serde_json::to_string(&scene_of(&verified)).map_err(|error| stated(error.to_string()))
 }
 
 /// A benchmark: its name, its brief, its process and the regions a design may place.
@@ -220,7 +240,7 @@ pub fn export_wafer(py: Python<'_>, file: &str, directory: &str, open: &Bound<'_
             .map_err(|error| ProjectError::from(caught(py, &error)))?;
         let build = building(py, &build);
         let project = Project::beside(design, &build)?;
-        Ok((project.verify()?, project.process))
+        project.verify()
     };
     let exported = wafer_of(Path::new(file), Path::new(directory), &opened).map_err(failed)?;
     let chips: Vec<Value> = (exported.wafer.placements.iter())

@@ -1,6 +1,6 @@
 # Getting started
 
-This page installs the package and takes one design, a mother machine with eight lanes fed from one inlet, from source to masks. It uses `check`, `solve`, `close` and `export`, which are the commands most work goes through.
+This page installs the package and takes one design, a mixer that meters three liquids into one stream, from source to the files a fab is sent. It uses `check`, `solve`, `close` and `export`, which are the commands most work goes through.
 
 ## Install
 
@@ -20,82 +20,105 @@ uv pip install maturin && maturin develop
 `close` writes a file beside the design it tunes, and the repository already holds tuned values for this design. Copy the design somewhere else to see it as written:
 
 ```console
-mkdir -p runs/tour && cp designs/mother_machine_manifold.py runs/tour/
+mkdir -p runs/tour && cp designs/goenner_mixer.py runs/tour/
 cd runs/tour
 ```
 
 ## Check that it can be made
 
-```console
-$ microfluidics check mother_machine_manifold.py
-mother_machine_manifold: can be made as drawn
-  rules                        satisfied
-  connectivity                 satisfied
-  mask-rules                   satisfied
-  gds-readback                 satisfied
-  print                        satisfied
+The design names two processes, one for each fab it can be made at:
+
+```python
+processes = (FLOWJEM_SU8_PDMS, COSINC_SU8_PDMS)
 ```
 
-`check` runs the fabrication checks: the design rules on the chip as drawn and on the prepared masks, the comparison of stated connections with drawn geometry, and the print model. [Fabrication](fabrication.md) describes each.
+```console
+$ microfluidics check goenner_mixer.py
+goenner_mixer: can be made as drawn
+  connectivity                 satisfied
+  at flowjem-su8-pdms
+    rules                        satisfied
+    mask-rules                   satisfied
+    gds-readback                 satisfied
+  at cosinc-su8-pdms
+    rules                        satisfied
+    mask-rules                   satisfied
+    gds-readback                 satisfied
+    print                        satisfied
+```
+
+`check` runs the fabrication checks: the comparison of stated connections with drawn geometry, and then, against each process, the design rules on the chip as drawn and on the prepared masks, and the print model when the process states one. [Fabrication](fabrication.md) describes each.
 
 ## Solve its flow
 
 ```console
-$ microfluidics solve mother_machine_manifold.py
-mother_machine_manifold: NOT every requirement holds
+$ microfluidics solve goenner_mixer.py
+goenner_mixer: NOT every requirement holds
   graph                        satisfied
-  requirement/balanced         VIOLATED
-      Every lane gets the same flow: lane[0] is 0.09858ul_min, and must be within 5% of their mean, 0.1474ul_min
-      ...
-  requirement/gentle           satisfied
+  requirement/buffer_share     satisfied
+  requirement/reagent_share    VIOLATED
+      Reagent is 10.72 % of the mixture: outlet is 11.16%, and must be 10.72% within 1%
+  requirement/sample_share     satisfied
 ```
 
-The design asks that every lane get the same flow within 5 %. As written, the two middle lanes get more than twice the flow of the outer ones, because the outer lanes sit at the far ends of the manifold's trunk. The command exits with 1 when a requirement does not hold.
+The design asks for 89.2 % buffer, 10.72 % reagent and 0.08 % sample, each within 1 % of its value. As written, the reagent's share is 11.16 %. The command exits with 1 when a requirement does not hold.
 
 ## Close it
 
-The design marks four parameters as tunable: the lane pitch, the lane width, and the trunk width of each manifold. `close` searches those ranges for values at which every requirement holds.
+The design marks two parameters as tunable: the run length of the reagent's serpentine and of the sample's. `close` searches their ranges for values at which every requirement holds. A trial that breaks a rule of either process is never moved to.
 
 ```console
-$ microfluidics close mother_machine_manifold.py
-mother_machine_manifold: every requirement holds after 23 moves
-  pitch: 2600um -> 400um
-  lane_width: 100um -> 40.338um
-  feed.trunk_width: 200um -> 239.724um
-  drain.trunk_width: 200um -> 239.724um
-  balanced: at 0.541 of its tolerance; it holds at 1 or less
-  gentle: at 0.650 of its tolerance; it holds at 1 or less
-written to mother_machine_manifold.tuned.toml
+$ microfluidics close goenner_mixer.py
+goenner_mixer: every requirement holds after 5 moves
+  reagent_resistor.run_length: 1000um -> 1176.674um
+  sample_resistor.run_length: 5600um -> 5700.237um
+  buffer_share: at 0.024 of its tolerance; it holds at 1 or less
+  reagent_share: at 0.196 of its tolerance; it holds at 1 or less
+  sample_share: at 0.058 of its tolerance; it holds at 1 or less
+written to goenner_mixer.tuned.toml
 ```
 
-The source file is unchanged. The tuned values are in `mother_machine_manifold.tuned.toml`, and every later command reads them. [Closure](verification.md#closure) explains the search and what it reports when the requirements cannot all be met.
+The source file is unchanged. The tuned values are in `goenner_mixer.tuned.toml`, and every later command reads them. [Closure](verification.md#closure) explains the search and what it reports when the requirements cannot all be met.
 
-## Export masks and a report
+## Export masks, a report and a sheet for each fab
 
 ```console
-$ microfluidics export mother_machine_manifold.py out
-mother_machine_manifold: passes
-with 4 tuned values from mother_machine_manifold.tuned.toml
+$ microfluidics export goenner_mixer.py out
+goenner_mixer: passes
+with 2 tuned values from goenner_mixer.tuned.toml
   deterministic                satisfied
-  rules                        satisfied
-  ...
-  corners                      satisfied
-  dxf-readback                 satisfied
-written to out: REPORT.md, report.json, design.json, masks/chip.gds, masks/mask_1_trench.dxf, masks/mask_2_flow.dxf, masks/preview.svg, masks/README.md
+  connectivity                 satisfied
+  graph                        satisfied
+  requirement/buffer_share     satisfied
+  requirement/reagent_share    satisfied
+  requirement/sample_share     satisfied
+  at flowjem-su8-pdms
+    rules                        satisfied
+    ...
+    dxf-readback                 satisfied
+  at cosinc-su8-pdms
+    rules                        satisfied
+    ...
+    dxf-readback                 satisfied
+written to out: design.json, report.json, flowjem-su8-pdms/REPORT.md, flowjem-su8-pdms/ORDER.md, flowjem-su8-pdms/masks/chip.gds, ...
 ```
 
-`export` runs every check, including the process corners, and writes:
+`export` runs every check, including each process's corners, and writes a folder for each process:
 
 | File | Contents |
 | --- | --- |
-| `REPORT.md`, `report.json` | Every check with its status, its findings and what it measured, and a hash of every input |
 | `design.json` | The elaborated design |
-| `masks/chip.gds` | Every layer in GDSII |
-| `masks/mask_<n>_<layer>.dxf` | One flat drawing per layer |
-| `masks/preview.svg` | All layers together, for viewing in a browser |
-| `masks/README.md` | Each mask's tone, bias and mirroring, for whoever makes the masks |
+| `report.json` | Every check at every process, with its status, its findings and what it measured, and a hash of every input |
+| `<process>/REPORT.md` | The checks that bear on that process, for a person to read |
+| `<process>/ORDER.md` or `TRAVELER.md` | The sheet for the fab: an order for one that is sent files, a traveler for a chip made by hand |
+| `<process>/masks/chip.gds` | Every layer in GDSII |
+| `<process>/masks/mask_<n>_<layer>.dxf` | One flat drawing per layer |
+| `<process>/masks/preview.svg` | All layers together, for viewing in a browser |
+| `<process>/masks/README.md` | Each mask's tone, bias and mirroring |
 
-Open `out/REPORT.md` first. Its opening line says whether the design passes, and the table under it lists each check. A design passes only when every check is satisfied or waived.
+Open `out/flowjem-su8-pdms/REPORT.md` first. Its opening line says whether the design passes at FlowJEM, and the table under it lists each check. A design passes only when every check is satisfied or waived, at every process it names.
+
+Then open `out/flowjem-su8-pdms/ORDER.md`. It says which limits FlowJEM has not published and what to ask before ordering. [FlowJEM](fabs/flowjem.md) and [COSINC](fabs/cosinc.md) describe how a design reaches each fab.
 
 ## Next steps
 

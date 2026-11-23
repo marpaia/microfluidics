@@ -7,9 +7,9 @@ import time
 from pathlib import Path
 from typing import Any
 
-from conftest import DESIGNS
+from conftest import FIXTURES
 
-MANIFOLD = (DESIGNS / "mother_machine_manifold.py").read_text()
+MANIFOLD = (FIXTURES / "mother_machine_manifold.py").read_text()
 
 
 class Viewer:

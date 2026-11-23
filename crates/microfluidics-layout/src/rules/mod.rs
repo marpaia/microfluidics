@@ -223,6 +223,7 @@ min_um = 2500.0
         let waive = |subject: &str| Waiver {
             rule: "roof".into(),
             subject: subject.into(),
+            process: None,
             reason: "The punched hole removes this roof".into(),
             by: "a researcher".into(),
         };

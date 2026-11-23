@@ -4,9 +4,11 @@ use std::{collections::BTreeMap, fs, io, path::Path};
 
 use microfluidics_core::{Check, Finding};
 
-use crate::format::{Dxf, Format, Gds, Svg, read_dxf};
-use crate::mask::MaskSet;
+use crate::format::{Dxf, Format, Gds, Svg, drawn, read_dxf};
+use crate::geometry::Rect;
+use crate::mask::{MaskSet, sides};
 use crate::maskspec::Tone;
+use crate::outline::union_area;
 use crate::process::Process;
 use crate::rectangle::area;
 
@@ -87,8 +89,15 @@ pub fn export(masks: &MaskSet, process: Option<&Process>, dir: &Path) -> Result<
             message,
             waived: None,
         };
-        let planned = masks.flattened(mask);
-        let planned_um2: f64 = planned.iter().map(|rectangle| rectangle.area()).sum::<f64>() * 1e12;
+        // The drawing holds each region once, so it is compared with the masks' outlines taken
+        // together, and with their area found another way.
+        let planned = drawn(masks, mask);
+        let rectangles: Vec<Rect> = masks.flattened(mask).iter().filter_map(sides).collect();
+        let apart: f64 = (masks.flattened(mask).iter())
+            .filter(|feature| sides(feature).is_none())
+            .map(|feature| feature.area())
+            .sum();
+        let planned_um2 = (union_area(&rectangles) + apart) * 1e12;
         match read_dxf(&String::from_utf8_lossy(&read(dir, &name)?)) {
             Ok(outlines) => {
                 let area_um2: f64 = outlines.iter().map(|outline| area(outline)).sum();
@@ -134,7 +143,7 @@ pub fn export(masks: &MaskSet, process: Option<&Process>, dir: &Path) -> Result<
     };
     let readme = format!(
         "# Photomasks\n\n\
-         `chip.gds` holds every layer, with repeated features as translates. The DXF drawings hold the same outlines, one layer each, flat. Layers are exposed in the order listed.\n\n\
+         `chip.gds` holds every layer, with repeated features as translates. The DXF drawings hold the same features, one layer each, flat: features that touch or overlap are one closed outline, so no two outlines of a drawing overlap. An outline round a hole runs in to the hole along a cut and back out the same way. Layers are exposed in the order listed.\n\n\
          | Layer | GDSII number | DXF drawing | Height, um | Outlines | Drawn into a deeper layer | Inside the outlines | Mirrored | Bias, um |\n| - | - | - | - | - | - | - | - | - |\n{rows}\n\
          - **Units:** GDSII in nanometres (one user unit is a micrometre); DXF in micrometres. The lower left corner is the origin; the drawing is {:.1} x {:.1} mm.\n\
          - **Outlines:** each closed outline encloses resist that stays on the master and becomes a channel in the cast chip. A clear mask is transparent inside the outlines and opaque elsewhere, for a negative resist; a dark mask is the reverse.\n\

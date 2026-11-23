@@ -7,6 +7,7 @@
 use serde::Deserialize;
 
 use crate::bundled::PROCESSES;
+use crate::fab::{Fab, Step, TABLES};
 use crate::maskspec::{MaskSpec, PrintModel, WrittenMask, WrittenPrint};
 
 /// A process file that cannot be used.
@@ -122,6 +123,9 @@ struct File {
     #[serde(default)]
     masks: Vec<WrittenMask>,
     print: Option<WrittenPrint>,
+    fab: Option<Fab>,
+    #[serde(default)]
+    steps: Vec<Step>,
 }
 
 #[derive(Deserialize)]
@@ -156,6 +160,10 @@ pub struct Process {
     pub masks: Vec<MaskSpec>,
     /// How masks print, when the process says.
     pub print: Option<PrintModel>,
+    /// The fab the process describes, when it names one.
+    pub fab: Option<Fab>,
+    /// The steps by which a chip is made, in order.
+    pub steps: Vec<Step>,
 }
 
 impl Process {
@@ -254,6 +262,16 @@ impl Process {
             }
             masks.push(mask);
         }
+        if let Some(fab) = &written.fab {
+            let known = |name: &String| rules.iter().any(|rule| &rule.name == name) || TABLES.contains(&name.as_str());
+            if let Some(unknown) = fab.assumed.iter().find(|name| !known(name)) {
+                let names: Vec<&str> = (rules.iter().map(|rule| rule.name.as_str())).chain(TABLES).collect();
+                return Err(fault(format!(
+                    "`{unknown}` is said to be assumed, but is no rule or table of the process; those are {}",
+                    names.join(", ")
+                )));
+            }
+        }
         Ok(Self {
             name: written.name,
             description: written.description,
@@ -262,6 +280,8 @@ impl Process {
             tolerances,
             masks,
             print,
+            fab: written.fab,
+            steps: written.steps,
         })
     }
 
@@ -294,6 +314,20 @@ impl Process {
             }
         })?;
         Self::parse(file, text)
+    }
+
+    /// What of the process its fab has not published, in words; `None` when it names no fab, or
+    /// the fab published everything.
+    pub fn caveat(&self) -> Option<String> {
+        self.fab.as_ref().and_then(|fab| fab.caveat(self.rules.len()))
+    }
+
+    /// The diameter of the hole punched at each access point, when a roof rule states one.
+    pub fn punch(&self) -> Option<f64> {
+        self.rules.iter().find_map(|rule| match rule.kind {
+            RuleKind::RoofSpan { punch, .. } if punch > 0.0 => Some(punch),
+            _ => None,
+        })
     }
 
     /// How the mask of `layer` is made from its drawing.

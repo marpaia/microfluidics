@@ -33,6 +33,8 @@ class Check:
     findings: tuple[Finding, ...] = ()
     metrics: dict[str, float] = field(default_factory=dict)
     note: str | None = None
+    process: str | None = None
+    """The process the check was made against, when it depends on one."""
 
     @property
     def passes(self) -> bool:
@@ -42,7 +44,8 @@ class Check:
     @classmethod
     def read(cls, held: dict[str, Any]) -> Check:
         findings = tuple(Finding.read(finding) for finding in held.get("findings", []))
-        return cls(held["id"], held["status"], findings, dict(held.get("metrics", {})), held.get("note"))
+        metrics = dict(held.get("metrics", {}))
+        return cls(held["id"], held["status"], findings, metrics, held.get("note"), held.get("process"))
 
 
 @dataclass(frozen=True)
@@ -57,9 +60,16 @@ class Report:
     inputs: dict[str, str] = field(default_factory=dict)
     files: tuple[str, ...] = ()
 
-    def check(self, id: str) -> Check | None:
-        """The check `id`, when it was run."""
-        return next((check for check in self.checks if check.id == id), None)
+    def check(self, id: str, process: str | None = None) -> Check | None:
+        """The check `id`, when it was run: with `process`, the one made against that process;
+        without, the first there is."""
+        held = (check for check in self.checks if check.id == id and process in (None, check.process))
+        return next(held, None)
+
+    @property
+    def processes(self) -> tuple[str, ...]:
+        """The processes the checks were made against, in the order the design names them."""
+        return tuple(dict.fromkeys(check.process for check in self.checks if check.process is not None))
 
     @classmethod
     def read(cls, held: dict[str, Any]) -> Report:

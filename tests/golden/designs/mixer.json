@@ -5,12 +5,68 @@
     "checks": [
       {
         "id": "deterministic",
+        "process": null,
         "status": "satisfied",
         "findings": 0,
         "metrics": {}
       },
       {
+        "id": "connectivity",
+        "process": null,
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "components": 1.0,
+          "edges": 21.0,
+          "nets": 15.0,
+          "open_to_flow": 1.0,
+          "ports": 16.0
+        }
+      },
+      {
+        "id": "graph",
+        "process": null,
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "conservation_residual": 3.6359428280794854e-14,
+          "edges": 21.0,
+          "edges_without_flow": 0.0,
+          "inertial_loss_percent": 0.0004529994838868561,
+          "max_reynolds": 0.17027027623387114,
+          "vertices": 22.0
+        }
+      },
+      {
+        "id": "requirement/first_share",
+        "process": null,
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "outlet": 49.99655830951927
+        }
+      },
+      {
+        "id": "requirement/second_share",
+        "process": null,
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "outlet": 29.980861013907745
+        }
+      },
+      {
+        "id": "requirement/third_share",
+        "process": null,
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "outlet": 20.02258067655914
+        }
+      },
+      {
         "id": "rules",
+        "process": "flowjem-su8-pdms",
         "status": "satisfied",
         "findings": 0,
         "metrics": {
@@ -26,19 +82,8 @@
         }
       },
       {
-        "id": "connectivity",
-        "status": "satisfied",
-        "findings": 0,
-        "metrics": {
-          "components": 1.0,
-          "edges": 21.0,
-          "nets": 15.0,
-          "open_to_flow": 1.0,
-          "ports": 16.0
-        }
-      },
-      {
         "id": "mask-rules",
+        "process": "flowjem-su8-pdms",
         "status": "satisfied",
         "findings": 0,
         "metrics": {
@@ -55,6 +100,69 @@
       },
       {
         "id": "gds-readback",
+        "process": "flowjem-su8-pdms",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "bytes": 2678.0,
+          "flow.outlines": 43.0,
+          "structures": 6.0
+        }
+      },
+      {
+        "id": "corners",
+        "process": "flowjem-su8-pdms",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "first_share": 0.011345646227411965,
+          "first_share.high": 49.998821841947716,
+          "first_share.low": 49.994327176886294,
+          "second_share": 0.066209213337128,
+          "second_share.high": 29.981574362219177,
+          "second_share.low": 29.98013723599886,
+          "third_share": 0.1204923043996442,
+          "third_share.high": 20.02409846087993,
+          "third_share.low": 20.021040922039923
+        }
+      },
+      {
+        "id": "rules",
+        "process": "cosinc-su8-pdms",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "chip.size": 25.0,
+          "feature.space": 199.99999999999878,
+          "feature.width": 199.99999999999878,
+          "layer.count": 1.0,
+          "layer.height": 49.99999999999999,
+          "port.edge": 2950.0,
+          "port.pitch": 4000.0,
+          "resist.aspect": 0.2500000000000015,
+          "roof.span": 4.000000000000011
+        }
+      },
+      {
+        "id": "mask-rules",
+        "process": "cosinc-su8-pdms",
+        "status": "satisfied",
+        "findings": 0,
+        "metrics": {
+          "chip.size": 25.0,
+          "feature.space": 199.99999999999878,
+          "feature.width": 199.99999999999878,
+          "layer.count": 1.0,
+          "layer.height": 49.99999999999999,
+          "port.edge": 2950.0,
+          "port.pitch": 4000.0,
+          "resist.aspect": 0.2500000000000015,
+          "roof.span": 4.000000000000011
+        }
+      },
+      {
+        "id": "gds-readback",
+        "process": "cosinc-su8-pdms",
         "status": "satisfied",
         "findings": 0,
         "metrics": {
@@ -65,6 +173,7 @@
       },
       {
         "id": "print",
+        "process": "cosinc-su8-pdms",
         "status": "satisfied",
         "findings": 0,
         "metrics": {
@@ -74,43 +183,8 @@
         }
       },
       {
-        "id": "graph",
-        "status": "satisfied",
-        "findings": 0,
-        "metrics": {
-          "conservation_residual": 3.6359428280794854e-14,
-          "edges": 21.0,
-          "edges_without_flow": 0.0,
-          "max_reynolds": 0.17027027623387114,
-          "vertices": 22.0
-        }
-      },
-      {
-        "id": "requirement/first_share",
-        "status": "satisfied",
-        "findings": 0,
-        "metrics": {
-          "outlet": 49.99655830951927
-        }
-      },
-      {
-        "id": "requirement/second_share",
-        "status": "satisfied",
-        "findings": 0,
-        "metrics": {
-          "outlet": 29.980861013907745
-        }
-      },
-      {
-        "id": "requirement/third_share",
-        "status": "satisfied",
-        "findings": 0,
-        "metrics": {
-          "outlet": 20.02258067655914
-        }
-      },
-      {
         "id": "corners",
+        "process": "cosinc-su8-pdms",
         "status": "satisfied",
         "findings": 0,
         "metrics": {
@@ -399,6 +473,7 @@
           ]
         ]
       ],
+      "fiducials": [],
       "glass_nm": [
         75000000,
         25000000,
@@ -576,7 +651,10 @@
           "Both"
         ]
       ],
-      "process": "conservative-su8-pdms",
+      "processes": [
+        "flowjem-su8-pdms",
+        "cosinc-su8-pdms"
+      ],
       "quantities": {},
       "rectangles": [
         [

@@ -2,6 +2,7 @@
 
 import microfluidics as mf
 from microfluidics.layers import FLOW
+from microfluidics.processes import COSINC_SU8_PDMS
 from microfluidics.regions import AccessPad, Manifold, TrenchLane
 from microfluidics.units import mbar, mm, ul_min, um
 
@@ -23,3 +24,7 @@ mf.Glass(75 * mm, 25 * mm, thickness=1 * mbar)  # refused: arg-type
 lane.port(at=(0 * um, 0 * um), width=1 * um, layer=FLOW, facing="down")  # refused: arg-type
 lane.route(FLOW, 100 * um, lane, lane.outlet)  # refused: arg-type
 100 * um + 10 * mbar  # refused: operator
+
+
+class Alone(mf.Design):
+    processes = COSINC_SU8_PDMS  # refused: assignment

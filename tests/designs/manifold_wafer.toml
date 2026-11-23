@@ -1,5 +1,5 @@
-# A 100 mm wafer of six one-inlet mother machines.
-name = "pilot-wafer"
+# A 100 mm wafer of six manifold-fed mother machines, for the tests.
+name = "manifold-wafer"
 diameter_mm = 100.0
 edge_exclusion_mm = 5.0
 street_mm = 1.0

@@ -35,7 +35,7 @@ INSTRUCTIONS = (
     "its check says `satisfied`; a check that is `violated` or `not_run` stands in the way, and its findings say "
     "why. Never report a number that no check or metric gave you.\n\n"
     "A design leaves things open that are not yours to choose: the pressures it is run at, the limits it must "
-    "meet, the process it is made in. When the brief does not give one, ask for it.\n\n"
+    "meet, the processes it is made in. When the brief does not give one, ask for it.\n\n"
     "You cannot waive a finding. A waiver is a person's decision, written by them in `<design>.waivers.toml`; say "
     "what you would waive and why. Tuned values are written only by `close`."
 )

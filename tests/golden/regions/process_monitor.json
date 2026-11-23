@@ -3,27 +3,12 @@
     "arguments": "",
     "fingerprint": {
       "access": [],
-      "translates": [
-        [
-          "it.along.lower",
-          11,
-          1
-        ],
-        [
-          "it.along.upper",
-          11,
-          1
-        ],
-        [
-          "it.up.lower",
-          11,
-          1
-        ],
-        [
-          "it.up.upper",
-          11,
-          1
-        ]
+      "edges": [],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
       ],
       "joints": [],
       "layers": [
@@ -40,9 +25,8 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [],
       "ports": [],
-      "process": null,
+      "processes": [],
       "quantities": {
         "it.along.reach": 2.4999999999999998e-06,
         "it.coarse.widest": 3.9999999999999996e-05,
@@ -643,23 +627,11 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
       ],
-      "tunables": []
-    }
-  },
-  {
-    "arguments": "trench_first = 0.6um, trench_step = 0.1um, trench_gap = 2um, flow_first = 30um, flow_step = 10um",
-    "fingerprint": {
-      "access": [],
       "translates": [
         [
           "it.along.lower",
@@ -682,6 +654,20 @@
           1
         ]
       ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "trench_first = 0.6um, trench_step = 0.1um, trench_gap = 2um, flow_first = 30um, flow_step = 10um",
+    "fingerprint": {
+      "access": [],
+      "edges": [],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
       "joints": [],
       "layers": [
         [
@@ -697,9 +683,8 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [],
       "ports": [],
-      "process": null,
+      "processes": [],
       "quantities": {
         "it.along.reach": 2.4999999999999998e-06,
         "it.coarse.widest": 7e-05,
@@ -1300,23 +1285,11 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
       ],
-      "tunables": []
-    }
-  },
-  {
-    "arguments": "trench_first = 2um, trench_step = 0.5um",
-    "fingerprint": {
-      "access": [],
       "translates": [
         [
           "it.along.lower",
@@ -1339,6 +1312,20 @@
           1
         ]
       ],
+      "tunables": []
+    }
+  },
+  {
+    "arguments": "trench_first = 2um, trench_step = 0.5um",
+    "fingerprint": {
+      "access": [],
+      "edges": [],
+      "fiducials": [],
+      "glass_nm": [
+        80000000,
+        80000000,
+        1000000
+      ],
       "joints": [],
       "layers": [
         [
@@ -1354,9 +1341,8 @@
       ],
       "name": "holder",
       "operating": null,
-      "edges": [],
       "ports": [],
-      "process": null,
+      "processes": [],
       "quantities": {
         "it.along.reach": 2.4999999999999998e-06,
         "it.coarse.widest": 3.9999999999999996e-05,
@@ -1957,15 +1943,32 @@
         ]
       ],
       "requirements": [],
-      "glass_nm": [
-        80000000,
-        80000000,
-        1000000
-      ],
       "size_nm": [
         60000000,
         60000000,
         3000000
+      ],
+      "translates": [
+        [
+          "it.along.lower",
+          11,
+          1
+        ],
+        [
+          "it.along.upper",
+          11,
+          1
+        ],
+        [
+          "it.up.lower",
+          11,
+          1
+        ],
+        [
+          "it.up.upper",
+          11,
+          1
+        ]
       ],
       "tunables": []
     }

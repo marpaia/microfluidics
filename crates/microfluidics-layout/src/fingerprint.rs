@@ -81,6 +81,10 @@ pub fn fingerprint(elaborated: &Elaborated) -> Value {
         .map(|point| json!([nm(point.x), nm(point.y)]))
         .collect();
     access.sort_by_key(Value::to_string);
+    let mut fiducials: Vec<Value> = (layout.fiducials.iter())
+        .map(|fiducial| json!([fiducial.name, nm(fiducial.position.x), nm(fiducial.position.y)]))
+        .collect();
+    fiducials.sort_by_key(Value::to_string);
     let mut edges: Vec<Value> = (chip.edges.iter())
         .map(|edge| {
             let ducts: Vec<Value> = (edge.ducts.iter())
@@ -115,7 +119,7 @@ pub fn fingerprint(elaborated: &Elaborated) -> Value {
 
     json!({
         "name": elaborated.name,
-        "process": elaborated.process,
+        "processes": elaborated.processes,
         "size_nm": [nm(chip.size[0]), nm(chip.size[1]), nm(chip.size[2])],
         "glass_nm": [nm(chip.glass[0]), nm(chip.glass[1]), nm(chip.glass[2])],
         "layers": layers,
@@ -123,6 +127,7 @@ pub fn fingerprint(elaborated: &Elaborated) -> Value {
         "translates": translates,
         "ports": ports,
         "access": access,
+        "fiducials": fiducials,
         "edges": edges,
         "joints": joints,
         "quantities": elaborated.quantities,

@@ -2,7 +2,7 @@
 
 import microfluidics as mf
 from microfluidics.layers import FLOW
-from microfluidics.processes import CONSERVATIVE_SU8_PDMS
+from microfluidics.processes import COSINC_SU8_PDMS, FLOWJEM_SU8_PDMS
 from microfluidics.regions import AccessPad, Junction, LineMonitor, Serpentine
 from microfluidics.units import Length, mbar, mm, mPa_s, pct, um
 
@@ -15,7 +15,7 @@ class GoennerMixer(mf.Design):
     thick or thin, or features made wide or narrow, change all three resistances alike and leave
     the shares as they are: the shares follow from the lengths, which a mask holds closely."""
 
-    process = CONSERVATIVE_SU8_PDMS
+    processes = (FLOWJEM_SU8_PDMS, COSINC_SU8_PDMS)
     slab = mf.Slab(30 * mm, 22 * mm, thickness=4 * mm)
     glass = mf.Glass(75 * mm, 25 * mm, thickness=1 * mm)
     layers = mf.Stack({FLOW: mf.LayerSpec(height=50 * um, gds=1)})

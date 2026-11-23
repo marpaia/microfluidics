@@ -24,30 +24,61 @@ pub struct Analysis {
     pub elaborated: Elaborated,
     /// The ports placed together: the vertices of the network.
     pub nets: Vec<Net>,
-    /// `rules` and `connectivity`.
+    /// `connectivity`, then `rules` against each process.
     pub checks: Vec<Check>,
 }
 
-/// Build the design and check it against `process` and its own stated connections.
+/// The waivers that speak of findings made against `process`.
+pub fn waived_at(waivers: &[Waiver], process: Option<&str>) -> Vec<Waiver> {
+    let applying = waivers.iter().filter(|waiver| waiver.applies(process));
+    applying.cloned().collect()
+}
+
+/// The design's rules as drawn, checked against `process`; with none, against no rule.
+pub fn drawn(elaborated: &Elaborated, process: Option<&Process>, waivers: &[Waiver]) -> Check {
+    let name = process.map(|process| process.name.as_str());
+    let rules = process.map_or(&[][..], |process| &process.rules);
+    let features = Features::drawn(&elaborated.chip);
+    let mut found = check(&features, rules, &waived_at(waivers, name)).for_process(name);
+    found.note = process.and_then(Process::caveat);
+    found
+}
+
+/// Each of `processes` in turn, or once with none when there are none.
+pub fn each(processes: &[Process]) -> Vec<Option<&Process>> {
+    if processes.is_empty() {
+        vec![None]
+    } else {
+        processes.iter().map(Some).collect()
+    }
+}
+
+/// Build the design and check it against its own stated connections and every one of
+/// `processes`.
 pub fn analyse(
     build: Build<'_>,
     overrides: &Overrides,
-    process: Option<&Process>,
+    processes: &[Process],
     waivers: &[Waiver],
 ) -> Result<Analysis, BuildError> {
     let elaborated = build(overrides)?;
-    let rules = process.map_or(&[][..], |process| &process.rules);
-    let drawn = check(&Features::drawn(&elaborated.chip), rules, waivers);
-    let connected = connectivity(&elaborated.chip, waivers);
+    let connected = connectivity(&elaborated.chip, &waived_at(waivers, None));
+    let mut checks = vec![connected.check];
+    checks.extend(
+        each(processes)
+            .into_iter()
+            .map(|process| drawn(&elaborated, process, waivers)),
+    );
     Ok(Analysis {
         elaborated,
         nets: connected.nets,
-        checks: vec![drawn, connected.check],
+        checks,
     })
 }
 
 impl Analysis {
-    /// Whether the design is sound as drawn: within its rules, and connected as it says.
+    /// Whether the design is sound as drawn: connected as it says, and within the rules of every
+    /// process.
     pub fn sound(&self) -> bool {
         self.checks.iter().all(Check::passes)
     }

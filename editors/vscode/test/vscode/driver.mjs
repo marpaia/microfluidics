@@ -130,7 +130,7 @@ export class Code {
     mkdirSync(workspace);
     for (const file of readdirSync(join(REPO, "designs"))) if (/\.(py|toml)$/.test(file)) cpSync(join(REPO, "designs", file), join(workspace, file));
     // The manifold with nothing tuned beside it, whose lanes are unequal as it is written.
-    cpSync(join(REPO, "designs", "mother_machine_manifold.py"), join(workspace, "untuned_manifold.py"));
+    cpSync(join(REPO, "tests", "designs", "mother_machine_manifold.py"), join(workspace, "untuned_manifold.py"));
     writeFileSync(
       join(user, "User", "settings.json"),
       JSON.stringify({

@@ -45,6 +45,8 @@ The engine tests build their fixtures directly on the builder, without Python. A
 
 A change that alters geometry or a measured value fails these tests. Re-capture a file only when the change is intended, and review its diff.
 
+`tests/designs/` holds a design kept for the tests alone: eight lanes of trenches fed from one inlet through a manifold, with its tuned values and a wafer of it. It exercises what the examples do not: closure stopped by a rule, yield, and requirements that fail as written.
+
 ## Typing tests
 
 `tests/typing/accept.py` must type-check. `tests/typing/refuse.py` holds one mistake per line with the error it must raise, and a test fails if the checker accepts any of them. [Designing](../designing.md#what-the-types-catch) lists the mistakes.

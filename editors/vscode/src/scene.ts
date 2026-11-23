@@ -112,6 +112,8 @@ export interface SceneDrive {
 
 export interface SceneFinding {
   check: string;
+  /** The process its check was made against, when it depends on one. */
+  process: string | null;
   group: Group;
   rule: string;
   message: string;
@@ -127,6 +129,8 @@ export interface SceneCheck {
   status: string;
   note: string | null;
   metrics: Record<string, number>;
+  /** The process the check was made against, when it depends on one. */
+  process: string | null;
 }
 
 export interface Scene {
@@ -139,7 +143,8 @@ export interface Scene {
   thickness_um: number;
   /** The width, depth and thickness of the glass the slab is bonded to, at the glass's middle. */
   glass_um: [number, number, number];
-  /** The diameter of the hole punched at each access point, when the process states it. */
+  /** The diameter of the hole punched at each access point, when the first process the design
+   * names states it. */
   punch_um: number | null;
   layers: SceneLayer[];
   outlines: Record<string, Shape[]>;

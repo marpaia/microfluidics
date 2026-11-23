@@ -4,8 +4,9 @@ use std::io;
 
 use microfluidics_core::model::LayerSpec;
 
-use crate::geometry::Point;
-use crate::mask::{Mask, MaskSet};
+use crate::geometry::{Point, Rect};
+use crate::mask::{Mask, MaskSet, sides};
+use crate::outline::outlines;
 
 /// A file format for masks.
 pub trait Format {
@@ -20,8 +21,23 @@ pub trait Format {
 /// GDSII: every layer in one file, with structures and translates.
 pub struct Gds;
 
-/// DXF (the R12 dialect): one drawing for each layer, flat, in micrometres.
+/// DXF (the R12 dialect): one drawing for each layer, flat, in micrometres. Features that touch
+/// or overlap are drawn as one closed outline, so that no two outlines of a drawing overlap.
 pub struct Dxf;
+
+/// The closed outlines a drawing of `mask` holds: the boundary of its rectangles together, and
+/// each feature that is not a rectangle as it is.
+pub fn drawn(masks: &MaskSet, mask: &Mask) -> Vec<Vec<Point>> {
+    let flat = masks.flattened(mask);
+    let rectangles: Vec<Rect> = flat.iter().filter_map(sides).collect();
+    let mut found = outlines(&rectangles);
+    found.extend(
+        (flat.iter())
+            .filter(|feature| sides(feature).is_none())
+            .map(|feature| feature.polygon.clone()),
+    );
+    found
+}
 
 /// A drawing of every layer together, for looking over in a browser.
 pub struct Svg;
@@ -64,9 +80,9 @@ impl Format for Dxf {
             .filter(|held| mask.is_none_or(|mask| mask.layer.name == held.layer.name))
         {
             let layer = mask.layer.name.to_uppercase();
-            for rectangle in masks.flattened(mask) {
+            for outline in drawn(masks, mask) {
                 write!(out, "0\nPOLYLINE\n8\n{layer}\n66\n1\n70\n1\n")?;
-                for point in &rectangle.polygon {
+                for point in &outline {
                     write!(
                         out,
                         "0\nVERTEX\n8\n{layer}\n10\n{:.4}\n20\n{:.4}\n",
@@ -158,26 +174,29 @@ pub fn read_dxf(text: &str) -> Result<Vec<Vec<Point>>, String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::format::{Dxf, Format, Svg, read_dxf};
+    use crate::format::{Dxf, Format, Svg, drawn, read_dxf};
     use crate::mask::prepare;
 
     #[test]
-    fn a_drawing_reads_back_as_the_mask_it_was_written_from() {
+    fn a_drawing_reads_back_as_the_outlines_of_the_mask_it_was_written_from() {
         let masks = prepare(&crate::fixtures::arrayed(), None);
         for mask in &masks.masks {
             let mut bytes = Vec::new();
             Dxf.write(&masks, Some(mask), &mut bytes).unwrap();
             let read = read_dxf(&String::from_utf8(bytes).unwrap()).unwrap();
-            let drawn = masks.flattened(mask);
-            assert_eq!(read.len(), drawn.len());
-            for (read, drawn) in read.iter().zip(&drawn) {
+            let planned = drawn(&masks, mask);
+            assert_eq!(read.len(), planned.len());
+            for (read, planned) in read.iter().zip(&planned) {
                 assert!(
                     read.iter()
-                        .zip(&drawn.polygon)
+                        .zip(planned)
                         .all(|(a, b)| (a.x - b.x * 1e6).abs() < 1e-4 && (a.y - b.y * 1e6).abs() < 1e-4)
                 );
             }
         }
+        // The hundred teeth stand apart from each other, and the channel is one outline.
+        let counts: Vec<usize> = (masks.masks.iter()).map(|mask| drawn(&masks, mask).len()).collect();
+        assert_eq!(counts, [100, 1]);
         assert_eq!(Dxf.file_name(Some(&masks.masks[0].layer)), "mask_1_trench.dxf");
         assert!(read_dxf("0\nVERTEX\n20\n1.0\n").is_err());
     }

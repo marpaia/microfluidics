@@ -144,7 +144,7 @@ pub struct Builder {
     slab: Option<[f64; 3]>,
     glass: Option<[f64; 3]>,
     stack: Vec<LayerSpec>,
-    process: Option<String>,
+    processes: Vec<String>,
     /// Whether `operate` and `require` take effect: off while a benchmark's candidate is built.
     own_conditions: bool,
 }
@@ -169,7 +169,7 @@ impl Builder {
             slab: None,
             glass: None,
             stack: Vec::new(),
-            process: None,
+            processes: Vec::new(),
             own_conditions: true,
         }
     }
@@ -293,10 +293,13 @@ impl Builder {
         Ok(())
     }
 
-    /// Name the process the chip is made in.
+    /// Name a process the chip is made in. A design may name several, each once.
     pub fn process(&mut self, name: &str, at: &Origin) -> Result<(), BuildError> {
         self.design_only(at, "names a process")?;
-        self.process = Some(name.to_owned());
+        if self.processes.iter().any(|held| held == name) {
+            return Err(BuildError::at(at, format!("the process `{name}` is named twice")));
+        }
+        self.processes.push(name.to_owned());
         Ok(())
     }
 
@@ -376,7 +379,7 @@ impl Builder {
         Ok(Elaborated {
             name: self.name,
             chip,
-            process: self.process,
+            processes: self.processes,
             quantities: built.quantities,
             operating: built.operating,
             requirements: built.requirements,
