@@ -6,6 +6,11 @@
   "publisher": "microfluidics",
   "private": true,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marpaia/microfluidics.git",
+    "directory": "editors/vscode"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -67,7 +72,7 @@
     "check": "tsc --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
     "test:vscode": "npm run build && node test/vscode/run.mjs",
-    "package": "npm run build && vsce package --no-dependencies --allow-missing-repository"
+    "package": "npm run build && vsce package --no-dependencies"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
