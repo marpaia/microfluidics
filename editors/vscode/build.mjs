@@ -14,3 +14,14 @@ await build({ ...shared, sourcemap: false, entryPoints: ["src/viewer/page.ts"], 
 // VS Code's icons, as the font and the stylesheet that names its glyphs.
 mkdirSync("out", { recursive: true });
 for (const file of ["codicon.css", "codicon.ttf"]) copyFileSync(`node_modules/@vscode/codicons/dist/${file}`, `out/${file}`);
+
+const licenseDir = "out/licenses";
+mkdirSync(licenseDir, { recursive: true });
+for (const [source, name] of [
+  ["preact/LICENSE", "preact.txt"],
+  ["three/LICENSE", "three.txt"],
+  ["@vscode/codicons/LICENSE", "Microsoft-Codicons-icons.txt"],
+  ["@vscode/codicons/LICENSE-CODE", "Microsoft-Codicons-code.txt"],
+]) {
+  copyFileSync(`node_modules/${source}`, `${licenseDir}/${name}`);
+}

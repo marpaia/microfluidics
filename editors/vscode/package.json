@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "publisher": "microfluidics",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -67,7 +67,7 @@
     "check": "tsc --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
     "test:vscode": "npm run build && node test/vscode/run.mjs",
-    "package": "npm run build && vsce package --no-dependencies --allow-missing-repository --skip-license"
+    "package": "npm run build && vsce package --no-dependencies --allow-missing-repository"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

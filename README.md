@@ -48,3 +48,7 @@ The export writes the following files under `out/cosinc-su8-pdms/`.
 | `REPORT.md` | Verification results for the COSINC process |
 
 Run `microfluidics guide` for the Python API, or explore the [design examples](https://github.com/marpaia/microfluidics/blob/master/docs/examples.md) and [VS Code viewer](https://github.com/marpaia/microfluidics/blob/master/docs/viewer.md). The alpha uses a steady laminar flow model that still awaits validation against fabricated chips. The [model and process limitations](https://github.com/marpaia/microfluidics/blob/master/docs/limitations.md) describe the assumptions behind the checks.
+
+## License
+
+[MIT](LICENSE)

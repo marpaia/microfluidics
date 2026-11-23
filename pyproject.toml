@@ -8,6 +8,8 @@ version = "0.0.1"
 description = "Design, verify, and export microfluidic chips using typed Python"
 requires-python = ">=3.11"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",

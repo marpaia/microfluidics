@@ -5,6 +5,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
+license.workspace = true
 
 # PyO3's macros expand to `unsafe` blocks, which the workspace forbids outright; this crate
 # denies it in its own code instead, and otherwise keeps the workspace's lints.
