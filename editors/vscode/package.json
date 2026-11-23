@@ -3,7 +3,7 @@
   "displayName": "Microfluidics",
   "description": "See a microfluidic chip as you write it: the chip beside its source, findings on the lines that caused them, and the flow through it.",
   "version": "0.1.0",
-  "publisher": "microfluidics",
+  "publisher": "marpaia",
   "private": true,
   "license": "MIT",
   "repository": {
