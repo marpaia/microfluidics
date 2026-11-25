@@ -7,7 +7,7 @@ import type { Scene } from "../src/scene";
 import { ancestors, at, bounds, extent, fit, holding, inView, labels, legendTicks, madeOn, nameable, owner, pick, placed, ramp, scaleBar, share, shownFlat, spansDecades, toCanvas, toDesign, visible, within, written, zoomed } from "../src/viewer/geometry";
 
 const scene: Scene = {
-  version: 3,
+  version: "0.6.0",
   design: "demo",
   passes: false,
   problems: 0,
@@ -23,6 +23,8 @@ const scene: Scene = {
   access: [],
   flows: [{ element: "lane", start: "a", end: "b", flow_ul_min: 0.2, velocity_mm_s: 1, shear_pa: 0.5, reynolds: 0.1 }],
   pressures_mbar: {},
+  viscosity_mpa_s: 1,
+  fractions: {},
   tunables: [],
   requirements: [],
   instances: [],

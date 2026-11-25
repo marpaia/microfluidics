@@ -56,4 +56,4 @@ A design is rebuilt from source for every closure trial and every session build.
 
 ## The viewer boundary
 
-The extension host (`editors/vscode/src/extension.ts`) starts a [session](../protocols/session.md) and relays its messages. The webview (`editors/vscode/src/viewer/`) draws a [scene](../formats/scene-v4.md) and knows nothing else about chips. Anything a viewer needs must therefore be in the scene.
+The extension host (`editors/vscode/src/extension.ts`) starts a [session](../protocols/session.md) and relays its messages. The webview (`editors/vscode/src/viewer/`) draws a [scene](../formats/scene.md) and knows nothing else about chips. Anything a viewer needs must therefore be in the scene.

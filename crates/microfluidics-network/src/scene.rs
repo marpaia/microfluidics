@@ -17,9 +17,13 @@ use crate::graph::extract;
 use crate::variation::Variation;
 use crate::verify::{Group, Verified, group, title};
 
-/// The version of the scene's format: raised when a viewer written for the last one would
-/// misread this one.
-pub const VERSION: u32 = 5;
+/// The version of the scene's format, as a semantic version. While the major is 0 the format is
+/// not settled: the minor is raised when a reader written for the last one would misread this
+/// one, by a field removed or renamed, or one whose meaning or unit is another; the patch is
+/// raised when fields are added, which such a reader passes over. A reader takes any scene of
+/// the major and minor it was written for whose patch is at least the one that added the last
+/// field it reads.
+pub const VERSION: &str = "0.6.0";
 
 const UM: f64 = 1e6;
 
@@ -190,7 +194,7 @@ pub struct SceneFinding {
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Scene {
-    pub version: u32,
+    pub version: &'static str,
     pub design: String,
     pub passes: bool,
     /// How many things stand in the way of it passing.
@@ -214,6 +218,11 @@ pub struct Scene {
     pub flows: Vec<SceneFlow>,
     /// The pressure at each vertex of the graph, in millibar.
     pub pressures_mbar: BTreeMap<String, f64>,
+    /// The viscosity of what flows, in millipascal seconds, when the design says how it is run.
+    pub viscosity_mpa_s: Option<f64>,
+    /// For each fed species, the share of what arrives at each vertex of the graph that is that
+    /// species, from 0 to 1.
+    pub fractions: BTreeMap<String, BTreeMap<String, f64>>,
     pub tunables: Vec<SceneTunable>,
     pub requirements: Vec<SceneRequirement>,
     pub instances: Vec<SceneInstance>,
@@ -403,7 +412,7 @@ pub fn scene(verified: &Verified) -> Scene {
         .collect();
 
     // What flows: the graph solved again as drawn, when the design says how it is run.
-    let (mut flows, mut pressures_mbar) = (Vec::new(), BTreeMap::new());
+    let (mut flows, mut pressures_mbar, mut fractions) = (Vec::new(), BTreeMap::new(), BTreeMap::new());
     if let Some(operating) = &elaborated.operating
         && let Ok(network) = extract(chip, &verified.analysis.nets, &Variation::nominal())
         && let Ok(solution) = network.solve(operating)
@@ -425,6 +434,12 @@ pub fn scene(verified: &Verified) -> Scene {
             .iter()
             .cloned()
             .zip(solution.pressure.iter().map(|pascals| pascals / 100.0))
+            .collect();
+        fractions = (solution.fractions.iter())
+            .map(|(species, shares)| {
+                let at = network.vertices.iter().cloned().zip(shares.iter().copied());
+                (species.clone(), at.collect())
+            })
             .collect();
     }
 
@@ -551,6 +566,8 @@ pub fn scene(verified: &Verified) -> Scene {
         access,
         flows,
         pressures_mbar,
+        viscosity_mpa_s: elaborated.operating.as_ref().map(|operating| operating.viscosity * 1e3),
+        fractions,
         tunables: elaborated.tunables.iter().map(tunable).collect(),
         requirements: elaborated.requirements.iter().map(stated).collect(),
         instances,

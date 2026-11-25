@@ -165,8 +165,10 @@ def test_each_requirement_is_followed_across_the_corners_of_the_process(tmp_path
 def test_a_scene_holds_what_a_viewer_draws_with_python_lines_for_what_the_design_made(tmp_path: Path) -> None:
     project = Project(FIXTURES / "mother_machine_manifold.py")
     scene = project.scene()
-    assert (scene["version"], scene["design"], scene["passes"]) == (5, "mother_machine_manifold", True)
+    assert (scene["version"], scene["design"], scene["passes"]) == ("0.6.0", "mother_machine_manifold", True)
     assert scene["problems"] == 0
+    # What flows is water at the viscosity the design states, and it feeds no species.
+    assert scene["viscosity_mpa_s"] == pytest.approx(0.7) and scene["fractions"] == {}
     assert (scene["glass_um"], scene["punch_um"]) == ([60000.0, 24000.0, 170.0], 750.0)
     assert len(scene["translates"]) == 22 and len(scene["flows"]) == 60 and len(scene["tunables"]) == 4
     file, line = scene["origins"]["feed"]["file"], scene["origins"]["feed"]["line"]
@@ -203,6 +205,25 @@ def test_a_scene_holds_what_a_viewer_draws_with_python_lines_for_what_the_design
     assert trial["passes"] is False and trial["problems"] > 0 and trial["tunables"][0]["value"] == 2600.0
     assert any(finding["check"] == "requirement/balanced" for finding in trial["findings"])
     assert (FIXTURES / "mother_machine_manifold.tuned.toml").read_text() == before
+
+
+def test_a_scene_holds_the_share_of_each_fed_species_at_every_vertex() -> None:
+    scene = Project(DESIGNS / "mixer.py").scene()
+    assert scene["viscosity_mpa_s"] == pytest.approx(1.0)
+    assert set(scene["fractions"]) == {"first", "second", "third"}
+    # Shares are stated at the vertices the flows and pressures name.
+    vertices = set(scene["pressures_mbar"])
+    assert all(set(shares) == vertices for shares in scene["fractions"].values())
+    assert {flow["start"] for flow in scene["flows"]} | {flow["end"] for flow in scene["flows"]} <= vertices
+    # Each inlet carries its own liquid alone, and the outlet the mixture the requirements measure.
+    driven = {drive["instance"]: drive["vertex"] for drive in scene["drives"]}
+    for species in ("first", "second", "third"):
+        assert scene["fractions"][species][driven[f"{species}_in"]] == pytest.approx(1.0)
+    mixed = {species: shares[driven["outlet"]] for species, shares in scene["fractions"].items()}
+    assert sum(mixed.values()) == pytest.approx(1.0)
+    for requirement in scene["requirements"]:
+        species = requirement["name"].removesuffix("_share")
+        assert next(iter(requirement["values"].values())) == pytest.approx(100.0 * mixed[species])
 
 
 def held(report: Report, id: str) -> Check:

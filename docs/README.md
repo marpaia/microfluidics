@@ -35,7 +35,7 @@
 
 ## Formats and protocols
 
-- [Scene format v5](formats/scene-v5.md) defines the document a viewer draws.
+- [Scene format](formats/scene.md) defines the document a viewer draws.
 - [Session protocol](protocols/session.md) defines the messages between a viewer and the process that keeps a design's scene current.
 
 ## Development

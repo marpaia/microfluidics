@@ -134,7 +134,9 @@ export interface SceneCheck {
 }
 
 export interface Scene {
-  version: number;
+  /** The format's semantic version. While the major is 0, the minor is raised when a reader
+   * would misread the scene, and the patch when fields are added. */
+  version: string;
   design: string;
   passes: boolean;
   /** How many things stand in the way of it passing. */
@@ -154,6 +156,10 @@ export interface Scene {
   access: [number, number][];
   flows: SceneFlow[];
   pressures_mbar: Record<string, number>;
+  /** The viscosity of what flows, when the design says how it is run. */
+  viscosity_mpa_s: number | null;
+  /** For each fed species, its share of what arrives at each vertex, from 0 to 1. */
+  fractions: Record<string, Record<string, number>>;
   tunables: SceneTunable[];
   requirements: SceneRequirement[];
   instances: SceneInstance[];

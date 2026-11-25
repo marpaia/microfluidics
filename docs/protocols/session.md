@@ -1,6 +1,6 @@
 # Session protocol
 
-A session keeps one design's [scene](../formats/scene-v5.md) current for a viewer. `microfluidics session <design.py>` starts one. It exchanges JSON messages, one per line, on standard input and output, and rebuilds the scene whenever a Python or TOML file beside the design is written.
+A session keeps one design's [scene](../formats/scene.md) current for a viewer. `microfluidics session <design.py>` starts one. It exchanges JSON messages, one per line, on standard input and output, and rebuilds the scene whenever a Python or TOML file beside the design is written.
 
 ## Messages from the session
 
